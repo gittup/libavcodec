@@ -1,18 +1,14 @@
 
-include ../config.mak
+include ../../config.mak
 
-SWSLIB = libswscale.a
 ifeq ($(SHARED_PP),yes)
 SPPLIB = libpostproc.so
 SPPVERSION = 0.0.1
 endif
 PPLIB = libpostproc.a
 
-SWSSRCS=swscale.c rgb2rgb.c yuv2rgb.c
-SWSOBJS=$(SWSSRCS:.c=.o)
 PPOBJS=postprocess.o
 SPPOBJS=postprocess_pic.o
-CS_TEST_OBJS=cs_test.o rgb2rgb.o ../cpudetect.o ../mp_msg.o ../libvo/aclib.o
 
 CFLAGS  = $(OPTFLAGS) $(MLIB_INC) -I. -I.. $(EXTRA_INC)
 # -I/usr/X11R6/include/
@@ -22,12 +18,9 @@ CFLAGS  = $(OPTFLAGS) $(MLIB_INC) -I. -I.. $(EXTRA_INC)
 # .PHONY: all clean
 
 .c.o:
-	$(CC) -c $(CFLAGS) -I.. -o $@ $<
+	$(CC) -c $(CFLAGS) -I.. -I../.. -o $@ $<
 
 all:    $(SWSLIB) $(PPLIB) $(SPPLIB)
-
-$(SWSLIB):     $(SWSOBJS)
-	$(AR) r $(SWSLIB) $(SWSOBJS)
 
 clean:
 	rm -f *.o *.a *~ *.so
@@ -38,14 +31,11 @@ distclean:
 dep:    depend
 
 depend:
-	$(CC) -MM $(CFLAGS) $(SWSSRCS) postprocess.c 1>.depend
-
-cs_test: $(CS_TEST_OBJS)
-	$(CC) $(CS_TEST_OBJS) -o cs_test
+	$(CC) -MM $(CFLAGS) postprocess.c 1>.depend
 
 ifeq ($(SHARED_PP),yes)
 postprocess_pic.o: postprocess.c
-	$(CC) -c $(CFLAGS) -fomit-frame-pointer -fPIC -DPIC -I.. -o $@ $<
+	$(CC) -c $(CFLAGS) -fomit-frame-pointer -fPIC -DPIC -I.. -I../.. -o $@ $<
 
 $(SPPLIB): $(SPPOBJS)
 	$(CC) -shared -Wl,-soname,$(SPPLIB).0 \
