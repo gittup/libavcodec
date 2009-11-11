@@ -1,0 +1,673 @@
+include_rules
+include $(GITTUP_ROOT)/mplayer/mplayer.tup
+
+CFLAGS += -DHAVE_AV_CONFIG_H
+
+objs-y = allcodecs.c                                                      \
+       audioconvert.c                                                   \
+       avpacket.c                                                       \
+       bitstream.c                                                      \
+       bitstream_filter.c                                               \
+       dsputil.c                                                        \
+       eval.c                                                           \
+       faanidct.c                                                       \
+       imgconvert.c                                                     \
+       jrevdct.c                                                        \
+       opt.c                                                            \
+       options.c                                                        \
+       parser.c                                                         \
+       raw.c                                                            \
+       resample.c                                                       \
+       resample2.c                                                      \
+       simple_idct.c                                                    \
+       utils.c                                                          \
+
+# parts needed for many different codecs
+objs-@(AANDCT)                  += aandcttab.c
+objs-@(ENCODERS)                += faandct.c jfdctfst.c jfdctint.c
+FFT-objs-@(HARDCODED_TABLES)    += cos_tables.c
+objs-@(FFT)                     += fft.c $(FFT-objs-y)
+objs-@(GOLOMB)                  += golomb.c
+objs-@(LPC)                     += lpc.c
+objs-@(MDCT)                    += mdct.c
+RDFT-objs-@(HARDCODED_TABLES)   += sin_tables.c
+objs-@(RDFT)                    += rdft.c $(RDFT-objs-y)
+objs-@(VAAPI)                   += vaapi.c
+objs-@(VDPAU)                   += vdpau.c
+
+# decoders/encoders/hardware accelerators
+objs-@(AAC_DECODER)             += aac.c aactab.c mpeg4audio.c \
+                                          aac_parser.c aac_ac3_parser.c
+objs-@(AAC_ENCODER)             += aacenc.c aaccoder.c    \
+                                          aacpsy.c aactab.c      \
+                                          psymodel.c iirfilter.c \
+                                          mpeg4audio.c
+objs-@(AASC_DECODER)            += aasc.c msrledec.c
+objs-@(AC3_DECODER)             += ac3dec.c ac3tab.c   \
+                                          ac3dec_data.c ac3.c \
+                                          ac3_parser.c aac_ac3_parser.c
+objs-@(AC3_ENCODER)             += ac3enc.c ac3tab.c ac3.c
+objs-@(ALAC_DECODER)            += alac.c
+objs-@(ALAC_ENCODER)            += alacenc.c
+objs-@(AMV_DECODER)             += sp5xdec.c mjpegdec.c mjpeg.c
+objs-@(APE_DECODER)             += apedec.c
+objs-@(ASV1_DECODER)            += asv1.c mpeg12data.c
+objs-@(ASV1_ENCODER)            += asv1.c mpeg12data.c
+objs-@(ASV2_DECODER)            += asv1.c mpeg12data.c
+objs-@(ASV2_ENCODER)            += asv1.c mpeg12data.c
+objs-@(ATRAC1_DECODER)          += atrac1.c atrac.c
+objs-@(ATRAC3_DECODER)          += atrac3.c atrac.c
+objs-@(AVS_DECODER)             += avs.c
+objs-@(BETHSOFTVID_DECODER)     += bethsoftvideo.c
+objs-@(BFI_DECODER)             += bfi.c
+objs-@(BMP_DECODER)             += bmp.c msrledec.c
+objs-@(BMP_ENCODER)             += bmpenc.c
+objs-@(C93_DECODER)             += c93.c
+objs-@(CAVS_DECODER)            += cavs.c cavsdec.c cavsdsp.c \
+                                          mpeg12data.c mpegvideo.c
+objs-@(CINEPAK_DECODER)         += cinepak.c
+objs-@(CLJR_DECODER)            += cljr.c
+objs-@(CLJR_ENCODER)            += cljr.c
+objs-@(COOK_DECODER)            += cook.c
+objs-@(CSCD_DECODER)            += cscd.c
+objs-@(CYUV_DECODER)            += cyuv.c
+objs-@(DCA_DECODER)             += dca.c
+objs-@(DNXHD_DECODER)           += dnxhddec.c dnxhddata.c
+objs-@(DNXHD_ENCODER)           += dnxhdenc.c dnxhddata.c       \
+                                          mpegvideo_enc.c motion_est.c \
+                                          ratecontrol.c mpeg12data.c   \
+                                          mpegvideo.c
+objs-@(DPX_DECODER)             += dpx.c
+objs-@(DSICINAUDIO_DECODER)     += dsicinav.c
+objs-@(DSICINVIDEO_DECODER)     += dsicinav.c
+objs-@(DVBSUB_DECODER)          += dvbsubdec.c
+objs-@(DVBSUB_ENCODER)          += dvbsub.c
+objs-@(DVDSUB_DECODER)          += dvdsubdec.c
+objs-@(DVDSUB_ENCODER)          += dvdsubenc.c
+objs-@(DVVIDEO_DECODER)         += dv.c dvdata.c
+objs-@(DVVIDEO_ENCODER)         += dv.c dvdata.c
+objs-@(DXA_DECODER)             += dxa.c
+objs-@(EAC3_DECODER)            += eac3dec.c eac3dec_data.c
+objs-@(EACMV_DECODER)           += eacmv.c
+objs-@(EAMAD_DECODER)           += eamad.c eaidct.c mpeg12.c \
+                                          mpeg12data.c mpegvideo.c  \
+                                          error_resilience.c
+objs-@(EATGQ_DECODER)           += eatgq.c eaidct.c
+objs-@(EATGV_DECODER)           += eatgv.c
+objs-@(EATQI_DECODER)           += eatqi.c eaidct.c mpeg12.c \
+                                          mpeg12data.c mpegvideo.c  \
+                                          error_resilience.c
+objs-@(EIGHTBPS_DECODER)        += 8bps.c
+objs-@(EIGHTSVX_EXP_DECODER)    += 8svx.c
+objs-@(EIGHTSVX_FIB_DECODER)    += 8svx.c
+objs-@(ESCAPE124_DECODER)       += escape124.c
+objs-@(FFV1_DECODER)            += ffv1.c rangecoder.c
+objs-@(FFV1_ENCODER)            += ffv1.c rangecoder.c
+objs-@(FFVHUFF_DECODER)         += huffyuv.c
+objs-@(FFVHUFF_ENCODER)         += huffyuv.c
+objs-@(FLAC_DECODER)            += flacdec.c flacdata.c flac.c
+objs-@(FLAC_ENCODER)            += flacenc.c flacdata.c flac.c
+objs-@(FLASHSV_DECODER)         += flashsv.c
+objs-@(FLASHSV_ENCODER)         += flashsvenc.c
+objs-@(FLIC_DECODER)            += flicvideo.c
+objs-@(FLV_DECODER)             += h263dec.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(FOURXM_DECODER)          += 4xm.c
+objs-@(FRAPS_DECODER)           += fraps.c huffman.c
+objs-@(FRWU_DECODER)            += frwu.c
+objs-@(GIF_DECODER)             += gifdec.c lzw.c
+objs-@(GIF_ENCODER)             += gif.c
+objs-@(H261_DECODER)            += h261dec.c h261.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(H261_ENCODER)            += h261enc.c h261.c             \
+                                          mpegvideo_enc.c motion_est.c \
+                                          ratecontrol.c mpeg12data.c   \
+                                          mpegvideo.c
+objs-@(H263_DECODER)            += h263dec.c h263.c h263_parser.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(H263_VAAPI_HWACCEL)      += vaapi_mpeg4.c
+objs-@(H263I_DECODER)           += h263dec.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(H263_ENCODER)            += mpegvideo_enc.c motion_est.c      \
+                                          ratecontrol.c h263.c mpeg12data.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(H264_DECODER)            += h264.c h264idct.c h264pred.c \
+                                          h264_parser.c cabac.c        \
+                                          mpegvideo.c error_resilience.c
+objs-@(H264_ENCODER)            += h264enc.c h264dspenc.c
+objs-@(HUFFYUV_DECODER)         += huffyuv.c
+objs-@(HUFFYUV_ENCODER)         += huffyuv.c
+objs-@(IDCIN_DECODER)           += idcinvideo.c
+objs-@(IMC_DECODER)             += imc.c
+objs-@(INDEO2_DECODER)          += indeo2.c
+objs-@(INDEO3_DECODER)          += indeo3.c
+objs-@(INTERPLAY_DPCM_DECODER)  += dpcm.c
+objs-@(INTERPLAY_VIDEO_DECODER) += interplayvideo.c
+objs-@(JPEGLS_DECODER)          += jpeglsdec.c jpegls.c \
+                                          mjpegdec.c mjpeg.c
+objs-@(JPEGLS_ENCODER)          += jpeglsenc.c jpegls.c
+objs-@(KMVC_DECODER)            += kmvc.c
+objs-@(LJPEG_ENCODER)           += ljpegenc.c mjpegenc.c mjpeg.c \
+                                          mpegvideo_enc.c motion_est.c  \
+                                          ratecontrol.c mpeg12data.c    \
+                                          mpegvideo.c
+objs-@(LOCO_DECODER)            += loco.c
+objs-@(MACE3_DECODER)           += mace.c
+objs-@(MACE6_DECODER)           += mace.c
+objs-@(MDEC_DECODER)            += mdec.c mpeg12.c mpeg12data.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(MIMIC_DECODER)           += mimic.c
+objs-@(MJPEG_DECODER)           += mjpegdec.c mjpeg.c
+objs-@(MJPEG_ENCODER)           += mjpegenc.c mjpeg.c           \
+                                          mpegvideo_enc.c motion_est.c \
+                                          ratecontrol.c mpeg12data.c   \
+                                          mpegvideo.c
+objs-@(MJPEGB_DECODER)          += mjpegbdec.c mjpegdec.c mjpeg.c
+objs-@(MLP_DECODER)             += mlpdec.c mlp_parser.c mlp.c mlpdsp.c
+objs-@(MMVIDEO_DECODER)         += mmvideo.c
+objs-@(MOTIONPIXELS_DECODER)    += motionpixels.c
+objs-@(MP1_DECODER)             += mpegaudiodec.c mpegaudiodecheader.c \
+                                          mpegaudio.c mpegaudiodata.c
+objs-@(MP2_DECODER)             += mpegaudiodec.c mpegaudiodecheader.c \
+                                          mpegaudio.c mpegaudiodata.c
+objs-@(MP2_ENCODER)             += mpegaudioenc.c mpegaudio.c \
+                                          mpegaudiodata.c
+objs-@(MP3ADU_DECODER)          += mpegaudiodec.c mpegaudiodecheader.c \
+                                          mpegaudio.c mpegaudiodata.c
+objs-@(MP3ON4_DECODER)          += mpegaudiodec.c mpegaudiodecheader.c \
+                                          mpegaudio.c mpegaudiodata.c mpeg4audio.c
+objs-@(MP3_DECODER)             += mpegaudiodec.c mpegaudiodecheader.c \
+                                          mpegaudio.c mpegaudiodata.c
+objs-@(MPC7_DECODER)            += mpc7.c mpc.c mpegaudiodec.c      \
+                                          mpegaudiodecheader.c mpegaudio.c \
+                                          mpegaudiodata.c
+objs-@(MPC8_DECODER)            += mpc8.c mpc.c mpegaudiodec.c      \
+                                          mpegaudiodecheader.c mpegaudio.c \
+                                          mpegaudiodata.c
+objs-@(MPEGVIDEO_DECODER)       += mpeg12.c mpeg12data.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEG_XVMC_DECODER)       += mpegvideo_xvmc.c
+objs-@(MPEG1VIDEO_DECODER)      += mpeg12.c mpeg12data.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEG1VIDEO_ENCODER)      += mpeg12enc.c mpegvideo_enc.c \
+                                          motion_est.c ratecontrol.c  \
+                                          mpeg12.c mpeg12data.c       \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEG2_VAAPI_HWACCEL)     += vaapi_mpeg2.c
+objs-@(MPEG2VIDEO_DECODER)      += mpeg12.c mpeg12data.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEG2VIDEO_ENCODER)      += mpeg12enc.c mpegvideo_enc.c \
+                                          motion_est.c ratecontrol.c  \
+                                          mpeg12.c mpeg12data.c       \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEG4_DECODER)           += h263dec.c h263.c mpeg4video_parser.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEG4_VAAPI_HWACCEL)     += vaapi_mpeg4.c
+objs-@(MSMPEG4V1_DECODER)       += msmpeg4.c msmpeg4data.c h263dec.c \
+                                          h263.c mpegvideo.c error_resilience.c
+objs-@(MSMPEG4V1_ENCODER)       += msmpeg4.c msmpeg4data.c
+objs-@(MSMPEG4V2_DECODER)       += msmpeg4.c msmpeg4data.c h263dec.c \
+                                          h263.c mpegvideo.c error_resilience.c
+objs-@(MSMPEG4V2_ENCODER)       += msmpeg4.c msmpeg4data.c
+objs-@(MSMPEG4V3_DECODER)       += msmpeg4.c msmpeg4data.c h263dec.c \
+                                          h263.c mpegvideo.c error_resilience.c
+objs-@(MSMPEG4V3_ENCODER)       += msmpeg4.c msmpeg4data.c
+objs-@(MSRLE_DECODER)           += msrle.c msrledec.c
+objs-@(MSVIDEO1_DECODER)        += msvideo1.c
+objs-@(MSZH_DECODER)            += lcldec.c
+objs-@(NELLYMOSER_DECODER)      += nellymoserdec.c nellymoser.c
+objs-@(NELLYMOSER_ENCODER)      += nellymoserenc.c nellymoser.c
+objs-@(NUV_DECODER)             += nuv.c rtjpeg.c
+objs-@(PAM_DECODER)             += pnmenc.c pnm.c
+objs-@(PAM_ENCODER)             += pnmenc.c
+objs-@(PBM_DECODER)             += pnmenc.c pnm.c
+objs-@(PBM_ENCODER)             += pnmenc.c
+objs-@(PCX_DECODER)             += pcx.c
+objs-@(PCX_ENCODER)             += pcxenc.c
+objs-@(PGM_DECODER)             += pnmenc.c pnm.c
+objs-@(PGM_ENCODER)             += pnmenc.c
+objs-@(PGMYUV_DECODER)          += pnmenc.c pnm.c
+objs-@(PGMYUV_ENCODER)          += pnmenc.c
+objs-@(PGSSUB_DECODER)          += pgssubdec.c
+objs-@(PNG_DECODER)             += png.c pngdec.c
+objs-@(PNG_ENCODER)             += png.c pngenc.c
+objs-@(PPM_DECODER)             += pnmenc.c pnm.c
+objs-@(PPM_ENCODER)             += pnmenc.c
+objs-@(PTX_DECODER)             += ptx.c
+objs-@(QCELP_DECODER)           += qcelpdec.c lsp.c celp_math.c \
+                                          celp_filters.c acelp_vectors.c
+objs-@(QDM2_DECODER)            += qdm2.c mpegaudiodec.c            \
+                                          mpegaudiodecheader.c mpegaudio.c \
+                                          mpegaudiodata.c
+objs-@(QDRAW_DECODER)           += qdrw.c
+objs-@(QPEG_DECODER)            += qpeg.c
+objs-@(QTRLE_DECODER)           += qtrle.c
+objs-@(QTRLE_ENCODER)           += qtrleenc.c
+objs-@(RA_144_DECODER)          += ra144.c celp_filters.c
+objs-@(RA_288_DECODER)          += ra288.c celp_math.c celp_filters.c
+objs-@(RAWVIDEO_DECODER)        += rawdec.c
+objs-@(RAWVIDEO_ENCODER)        += rawenc.c
+objs-@(RL2_DECODER)             += rl2.c
+objs-@(ROQ_DECODER)             += roqvideodec.c roqvideo.c
+objs-@(ROQ_ENCODER)             += roqvideoenc.c roqvideo.c elbg.c
+objs-@(ROQ_DPCM_DECODER)        += dpcm.c
+objs-@(ROQ_DPCM_ENCODER)        += roqaudioenc.c
+objs-@(RPZA_DECODER)            += rpza.c
+objs-@(RV10_DECODER)            += rv10.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(RV10_ENCODER)            += rv10enc.c
+objs-@(RV20_DECODER)            += rv10.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(RV20_ENCODER)            += rv20enc.c
+objs-@(RV30_DECODER)            += rv30.c rv34.c h264pred.c rv30dsp.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(RV40_DECODER)            += rv40.c rv34.c h264pred.c rv40dsp.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(SGI_DECODER)             += sgidec.c
+objs-@(SGI_ENCODER)             += sgienc.c rle.c
+objs-@(SHORTEN_DECODER)         += shorten.c
+objs-@(SMACKAUD_DECODER)        += smacker.c
+objs-@(SMACKER_DECODER)         += smacker.c
+objs-@(SMC_DECODER)             += smc.c
+objs-@(SNOW_DECODER)            += snow.c rangecoder.c
+objs-@(SNOW_ENCODER)            += snow.c rangecoder.c motion_est.c \
+                                          ratecontrol.c h263.c             \
+                                          mpegvideo.c error_resilience.c
+objs-@(SOL_DPCM_DECODER)        += dpcm.c
+objs-@(SONIC_DECODER)           += sonic.c
+objs-@(SONIC_ENCODER)           += sonic.c
+objs-@(SONIC_LS_ENCODER)        += sonic.c
+objs-@(SP5X_DECODER)            += sp5xdec.c mjpegdec.c mjpeg.c
+objs-@(SUNRAST_DECODER)         += sunrast.c
+objs-@(SVQ1_DECODER)            += svq1dec.c svq1.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(SVQ1_ENCODER)            += svq1enc.c svq1.c    \
+                                          motion_est.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(SVQ3_DECODER)            += h264.c h264idct.c h264pred.c   \
+                                          h264_parser.c cabac.c          \
+                                          mpegvideo.c error_resilience.c \
+                                          svq1dec.c svq1.c h263.c
+objs-@(TARGA_DECODER)           += targa.c
+objs-@(TARGA_ENCODER)           += targaenc.c rle.c
+objs-@(THEORA_DECODER)          += xiph.c
+objs-@(THP_DECODER)             += mjpegdec.c mjpeg.c
+objs-@(TIERTEXSEQVIDEO_DECODER) += tiertexseqv.c
+objs-@(TIFF_DECODER)            += tiff.c lzw.c faxcompr.c
+objs-@(TIFF_ENCODER)            += tiffenc.c rle.c lzwenc.c
+objs-@(TMV_DECODER)             += tmv.c cga_data.c
+objs-@(TRUEHD_DECODER)          += mlpdec.c mlp_parser.c mlp.c mlpdsp.c
+objs-@(TRUEMOTION1_DECODER)     += truemotion1.c
+objs-@(TRUEMOTION2_DECODER)     += truemotion2.c
+objs-@(TRUESPEECH_DECODER)      += truespeech.c
+objs-@(TSCC_DECODER)            += tscc.c msrledec.c
+objs-@(TTA_DECODER)             += tta.c
+objs-@(TWINVQ_DECODER)          += twinvq.c
+objs-@(TXD_DECODER)             += txd.c s3tc.c
+objs-@(ULTI_DECODER)            += ulti.c
+objs-@(V210_DECODER)            += v210dec.c
+objs-@(V210_ENCODER)            += v210enc.c
+objs-@(V210X_DECODER)           += v210x.c
+objs-@(VB_DECODER)              += vb.c
+objs-@(VC1_DECODER)             += vc1dec.c vc1.c vc1data.c vc1dsp.c \
+                                          msmpeg4.c msmpeg4data.c           \
+                                          h263dec.c h263.c                  \
+                                          intrax8.c intrax8dsp.c            \
+                                          mpegvideo.c error_resilience.c
+objs-@(VC1_VAAPI_HWACCEL)       += vaapi_vc1.c
+objs-@(VCR1_DECODER)            += vcr1.c
+objs-@(VCR1_ENCODER)            += vcr1.c
+objs-@(VMDAUDIO_DECODER)        += vmdav.c
+objs-@(VMDVIDEO_DECODER)        += vmdav.c
+objs-@(VMNC_DECODER)            += vmnc.c
+objs-@(VORBIS_DECODER)          += vorbis_dec.c vorbis.c \
+                                          vorbis_data.c xiph.c
+objs-@(VORBIS_ENCODER)          += vorbis_enc.c vorbis.c \
+                                          vorbis_data.c
+objs-@(VP3_DECODER)             += vp3.c vp3dsp.c
+objs-@(VP5_DECODER)             += vp5.c vp56.c vp56data.c \
+                                          vp3dsp.c
+objs-@(VP6_DECODER)             += vp6.c vp56.c vp56data.c \
+                                          vp3dsp.c vp6dsp.c huffman.c
+objs-@(VQA_DECODER)             += vqavideo.c
+objs-@(WAVPACK_DECODER)         += wavpack.c
+objs-@(WMAPRO_DECODER)          += wmaprodec.c wma.c
+objs-@(WMAV1_DECODER)           += wmadec.c wma.c
+objs-@(WMAV1_ENCODER)           += wmaenc.c wma.c
+objs-@(WMAV2_DECODER)           += wmadec.c wma.c
+objs-@(WMAV2_ENCODER)           += wmaenc.c wma.c
+objs-@(WMV1_DECODER)            += h263dec.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(WMV2_DECODER)            += wmv2dec.c wmv2.c        \
+                                          msmpeg4.c msmpeg4data.c \
+                                          h263dec.c h263.c        \
+                                          intrax8.c intrax8dsp.c  \
+                                          mpegvideo.c error_resilience.c
+objs-@(WMV2_ENCODER)            += wmv2enc.c wmv2.c \
+                                          msmpeg4.c msmpeg4data.c
+objs-@(WNV1_DECODER)            += wnv1.c
+objs-@(WS_SND1_DECODER)         += ws-snd1.c
+objs-@(XAN_DPCM_DECODER)        += dpcm.c
+objs-@(XAN_WC3_DECODER)         += xan.c
+objs-@(XAN_WC4_DECODER)         += xan.c
+objs-@(XL_DECODER)              += xl.c
+objs-@(XSUB_DECODER)            += xsubdec.c
+objs-@(XSUB_ENCODER)            += xsubenc.c
+objs-@(ZLIB_DECODER)            += lcldec.c
+objs-@(ZLIB_ENCODER)            += lclenc.c
+objs-@(ZMBV_DECODER)            += zmbv.c
+objs-@(ZMBV_ENCODER)            += zmbvenc.c
+
+# (AD)PCM decoders/encoders
+objs-@(PCM_ALAW_DECODER)           += pcm.c
+objs-@(PCM_ALAW_ENCODER)           += pcm.c
+objs-@(PCM_BLURAY_DECODER)         += pcm-mpeg.c
+objs-@(PCM_DVD_DECODER)            += pcm.c
+objs-@(PCM_DVD_ENCODER)            += pcm.c
+objs-@(PCM_F32BE_DECODER)          += pcm.c
+objs-@(PCM_F32BE_ENCODER)          += pcm.c
+objs-@(PCM_F32LE_DECODER)          += pcm.c
+objs-@(PCM_F32LE_ENCODER)          += pcm.c
+objs-@(PCM_F64BE_DECODER)          += pcm.c
+objs-@(PCM_F64BE_ENCODER)          += pcm.c
+objs-@(PCM_F64LE_DECODER)          += pcm.c
+objs-@(PCM_F64LE_ENCODER)          += pcm.c
+objs-@(PCM_MULAW_DECODER)          += pcm.c
+objs-@(PCM_MULAW_ENCODER)          += pcm.c
+objs-@(PCM_S8_DECODER)             += pcm.c
+objs-@(PCM_S8_ENCODER)             += pcm.c
+objs-@(PCM_S16BE_DECODER)          += pcm.c
+objs-@(PCM_S16BE_ENCODER)          += pcm.c
+objs-@(PCM_S16LE_DECODER)          += pcm.c
+objs-@(PCM_S16LE_ENCODER)          += pcm.c
+objs-@(PCM_S16LE_PLANAR_DECODER)   += pcm.c
+objs-@(PCM_S24BE_DECODER)          += pcm.c
+objs-@(PCM_S24BE_ENCODER)          += pcm.c
+objs-@(PCM_S24DAUD_DECODER)        += pcm.c
+objs-@(PCM_S24DAUD_ENCODER)        += pcm.c
+objs-@(PCM_S24LE_DECODER)          += pcm.c
+objs-@(PCM_S24LE_ENCODER)          += pcm.c
+objs-@(PCM_S32BE_DECODER)          += pcm.c
+objs-@(PCM_S32BE_ENCODER)          += pcm.c
+objs-@(PCM_S32LE_DECODER)          += pcm.c
+objs-@(PCM_S32LE_ENCODER)          += pcm.c
+objs-@(PCM_U8_DECODER)             += pcm.c
+objs-@(PCM_U8_ENCODER)             += pcm.c
+objs-@(PCM_U16BE_DECODER)          += pcm.c
+objs-@(PCM_U16BE_ENCODER)          += pcm.c
+objs-@(PCM_U16LE_DECODER)          += pcm.c
+objs-@(PCM_U16LE_ENCODER)          += pcm.c
+objs-@(PCM_U24BE_DECODER)          += pcm.c
+objs-@(PCM_U24BE_ENCODER)          += pcm.c
+objs-@(PCM_U24LE_DECODER)          += pcm.c
+objs-@(PCM_U24LE_ENCODER)          += pcm.c
+objs-@(PCM_U32BE_DECODER)          += pcm.c
+objs-@(PCM_U32BE_ENCODER)          += pcm.c
+objs-@(PCM_U32LE_DECODER)          += pcm.c
+objs-@(PCM_U32LE_ENCODER)          += pcm.c
+objs-@(PCM_ZORK_DECODER)           += pcm.c
+objs-@(PCM_ZORK_ENCODER)           += pcm.c
+
+objs-@(ADPCM_4XM_DECODER)          += adpcm.c
+objs-@(ADPCM_ADX_DECODER)          += adxdec.c
+objs-@(ADPCM_ADX_ENCODER)          += adxenc.c
+objs-@(ADPCM_CT_DECODER)           += adpcm.c
+objs-@(ADPCM_EA_DECODER)           += adpcm.c
+objs-@(ADPCM_EA_MAXIS_XA_DECODER)  += adpcm.c
+objs-@(ADPCM_EA_R1_DECODER)        += adpcm.c
+objs-@(ADPCM_EA_R2_DECODER)        += adpcm.c
+objs-@(ADPCM_EA_R3_DECODER)        += adpcm.c
+objs-@(ADPCM_EA_XAS_DECODER)       += adpcm.c
+objs-@(ADPCM_G726_DECODER)         += g726.c
+objs-@(ADPCM_G726_ENCODER)         += g726.c
+objs-@(ADPCM_IMA_AMV_DECODER)      += adpcm.c
+objs-@(ADPCM_IMA_DK3_DECODER)      += adpcm.c
+objs-@(ADPCM_IMA_DK4_DECODER)      += adpcm.c
+objs-@(ADPCM_IMA_EA_EACS_DECODER)  += adpcm.c
+objs-@(ADPCM_IMA_EA_SEAD_DECODER)  += adpcm.c
+objs-@(ADPCM_IMA_ISS_DECODER)      += adpcm.c
+objs-@(ADPCM_IMA_QT_DECODER)       += adpcm.c
+objs-@(ADPCM_IMA_QT_ENCODER)       += adpcm.c
+objs-@(ADPCM_IMA_SMJPEG_DECODER)   += adpcm.c
+objs-@(ADPCM_IMA_WAV_DECODER)      += adpcm.c
+objs-@(ADPCM_IMA_WAV_ENCODER)      += adpcm.c
+objs-@(ADPCM_IMA_WS_DECODER)       += adpcm.c
+objs-@(ADPCM_MS_DECODER)           += adpcm.c
+objs-@(ADPCM_MS_ENCODER)           += adpcm.c
+objs-@(ADPCM_SBPRO_2_DECODER)      += adpcm.c
+objs-@(ADPCM_SBPRO_3_DECODER)      += adpcm.c
+objs-@(ADPCM_SBPRO_4_DECODER)      += adpcm.c
+objs-@(ADPCM_SWF_DECODER)          += adpcm.c
+objs-@(ADPCM_SWF_ENCODER)          += adpcm.c
+objs-@(ADPCM_THP_DECODER)          += adpcm.c
+objs-@(ADPCM_XA_DECODER)           += adpcm.c
+objs-@(ADPCM_YAMAHA_DECODER)       += adpcm.c
+objs-@(ADPCM_YAMAHA_ENCODER)       += adpcm.c
+
+# libavformat dependencies
+objs-@(ADTS_MUXER)              += mpeg4audio.c
+objs-@(DV_DEMUXER)              += dvdata.c
+objs-@(DV_MUXER)                += dvdata.c
+objs-@(EAC3_DEMUXER)            += ac3_parser.c ac3tab.c \
+                                          aac_ac3_parser.c
+objs-@(FLAC_DEMUXER)            += flacdec.c flacdata.c flac.c
+objs-@(FLAC_MUXER)              += flacdec.c flacdata.c flac.c
+objs-@(FLV_DEMUXER)             += mpeg4audio.c
+objs-@(GXF_DEMUXER)             += mpeg12data.c
+objs-@(MATROSKA_AUDIO_MUXER)    += xiph.c mpeg4audio.c \
+                                          flacdec.c flacdata.c flac.c
+objs-@(MATROSKA_DEMUXER)        += mpeg4audio.c
+objs-@(MATROSKA_MUXER)          += xiph.c mpeg4audio.c \
+                                          flacdec.c flacdata.c flac.c
+objs-@(MOV_DEMUXER)             += mpeg4audio.c mpegaudiodata.c
+objs-@(MPEGTS_MUXER)            += mpegvideo.c
+objs-@(NUT_MUXER)               += mpegaudiodata.c
+objs-@(OGG_DEMUXER)             += flacdec.c flacdata.c flac.c
+objs-@(OGG_MUXER)               += xiph.c flacdec.c flacdata.c flac.c
+objs-@(RTP_MUXER)               += mpegvideo.c
+objs-@(SPDIF_MUXER)             += aac_parser.c aac_ac3_parser.c
+
+# external codec libraries
+objs-@(LIBDIRAC_DECODER)           += libdiracdec.c
+objs-@(LIBDIRAC_ENCODER)           += libdiracenc.c libdirac_libschro.c
+objs-@(LIBFAAC_ENCODER)            += libfaac.c
+objs-@(LIBFAAD_DECODER)            += libfaad.c
+objs-@(LIBGSM_DECODER)             += libgsm.c
+objs-@(LIBGSM_ENCODER)             += libgsm.c
+objs-@(LIBGSM_MS_DECODER)          += libgsm.c
+objs-@(LIBGSM_MS_ENCODER)          += libgsm.c
+objs-@(LIBMP3LAME_ENCODER)         += libmp3lame.c
+objs-@(LIBOPENCORE_AMRNB_DECODER)  += libopencore-amr.c
+objs-@(LIBOPENCORE_AMRNB_ENCODER)  += libopencore-amr.c
+objs-@(LIBOPENCORE_AMRWB_ENCODER)  += libopencore-amr.c
+objs-@(LIBOPENJPEG_DECODER)        += libopenjpeg.c
+objs-@(LIBSCHROEDINGER_DECODER)    += libschroedingerdec.c \
+                                             libschroedinger.c    \
+                                             libdirac_libschro.c
+objs-@(LIBSCHROEDINGER_ENCODER)    += libschroedingerenc.c \
+                                             libschroedinger.c    \
+                                             libdirac_libschro.c
+objs-@(LIBSPEEX_DECODER)           += libspeexdec.c
+objs-@(LIBTHEORA_ENCODER)          += libtheoraenc.c
+objs-@(LIBVORBIS_ENCODER)          += libvorbis.c
+objs-@(LIBX264_ENCODER)            += libx264.c
+objs-@(LIBXVID_ENCODER)            += libxvidff.c libxvid_rc.c
+
+# parsers
+objs-@(AAC_PARSER)              += aac_parser.c aac_ac3_parser.c \
+                                          mpeg4audio.c
+objs-@(AC3_PARSER)              += ac3_parser.c ac3tab.c \
+                                          aac_ac3_parser.c
+objs-@(CAVSVIDEO_PARSER)        += cavs_parser.c
+objs-@(DCA_PARSER)              += dca_parser.c
+objs-@(DIRAC_PARSER)            += dirac_parser.c
+objs-@(DNXHD_PARSER)            += dnxhd_parser.c
+objs-@(DVBSUB_PARSER)           += dvbsub_parser.c
+objs-@(DVDSUB_PARSER)           += dvdsub_parser.c
+objs-@(H261_PARSER)             += h261_parser.c
+objs-@(H263_PARSER)             += h263_parser.c
+objs-@(H264_PARSER)             += h264_parser.c h264.c h264idct.c \
+                                          h264pred.c cabac.c              \
+                                          mpegvideo.c error_resilience.c
+objs-@(MJPEG_PARSER)            += mjpeg_parser.c
+objs-@(MLP_PARSER)              += mlp_parser.c mlp.c
+objs-@(MPEG4VIDEO_PARSER)       += mpeg4video_parser.c h263.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(MPEGAUDIO_PARSER)        += mpegaudio_parser.c \
+                                          mpegaudiodecheader.c mpegaudiodata.c
+objs-@(MPEGVIDEO_PARSER)        += mpegvideo_parser.c    \
+                                          mpeg12.c mpeg12data.c \
+                                          mpegvideo.c error_resilience.c
+objs-@(PNM_PARSER)              += pnm_parser.c pnm.c
+objs-@(VC1_PARSER)              += vc1_parser.c vc1.c vc1data.c \
+                                          msmpeg4.c msmpeg4data.c      \
+                                          h263dec.c h263.c intrax8.c   \
+                                          mpegvideo.c error_resilience.c
+objs-@(VP3_PARSER)              += vp3_parser.c
+
+# bitstream filters
+objs-@(AAC_ADTSTOASC_BSF)          += aac_adtstoasc_bsf.c aac_parser.c \
+                                             aac_ac3_parser.c mpeg4audio.c
+objs-@(DUMP_EXTRADATA_BSF)         += dump_extradata_bsf.c
+objs-@(H264_MP4TOANNEXB_BSF)       += h264_mp4toannexb_bsf.c
+objs-@(IMX_DUMP_HEADER_BSF)        += imx_dump_header_bsf.c
+objs-@(MJPEGA_DUMP_HEADER_BSF)     += mjpega_dump_header_bsf.c
+objs-@(MOV2TEXTSUB_BSF)            += movsub_bsf.c
+objs-@(MP3_HEADER_COMPRESS_BSF)    += mp3_header_compress_bsf.c
+objs-@(MP3_HEADER_DECOMPRESS_BSF)  += mp3_header_decompress_bsf.c \
+                                             mpegaudiodata.c
+objs-@(NOISE_BSF)                  += noise_bsf.c
+objs-@(REMOVE_EXTRADATA_BSF)       += remove_extradata_bsf.c
+objs-@(TEXT2MOVSUB_BSF)            += movsub_bsf.c
+
+# thread libraries
+objs-y                  += pthread.c
+
+# processor-specific code
+X86-objs-@(MLP_DECODER)         += x86/mlpdsp.c
+X86-objs-@(TRUEHD_DECODER)      += x86/mlpdsp.c
+
+#objs-y                       += $(X86-objs-y)
+
+YASM-objs-@(FFT)                += x86/fft_mmx.c                 \
+                                          $(YASM-objs-FFT-yes)
+YASM-objs-@(GPL)                += x86/h264_deblock_sse2.c       \
+                                          x86/h264_idct_sse2.c          \
+
+MMX-objs-@(CAVS_DECODER)        += x86/cavsdsp_mmx.c
+MMX-objs-@(ENCODERS)            += x86/dsputilenc_mmx.c
+MMX-objs-@(GPL)                 += x86/idct_mmx.c
+MMX-objs-@(LPC)                 += x86/lpc_mmx.c
+MMX-objs-@(SNOW_DECODER)        += x86/snowdsp_mmx.c
+MMX-objs-@(VC1_DECODER)         += x86/vc1dsp_mmx.c
+MMX-objs-@(VP3_DECODER)         += x86/vp3dsp_mmx.c              \
+                                          x86/vp3dsp_sse2.c
+MMX-objs-@(VP5_DECODER)         += x86/vp3dsp_mmx.c              \
+                                          x86/vp3dsp_sse2.c
+MMX-objs-@(VP6_DECODER)         += x86/vp3dsp_mmx.c              \
+                                          x86/vp3dsp_sse2.c             \
+                                          x86/vp6dsp_mmx.c              \
+                                          x86/vp6dsp_sse2.c
+MMX-objs-$(HAVE_YASM)                  += x86/dsputil_yasm.c            \
+                                          $(YASM-objs-y)
+
+objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
+                                          x86/dnxhd_mmx.c               \
+                                          x86/dsputil_mmx.c             \
+                                          x86/fdct_mmx.c                \
+                                          x86/fft.c                     \
+                                          x86/idct_mmx_xvid.c           \
+                                          x86/idct_sse2_xvid.c          \
+                                          x86/motion_est_mmx.c          \
+                                          x86/mpegvideo_mmx.c           \
+                                          x86/simple_idct_mmx.c         \
+
+objs-$(ARCH_ALPHA)                     += alpha/dsputil_alpha.c         \
+                                          alpha/dsputil_alpha_asm.c     \
+                                          alpha/motion_est_alpha.c      \
+                                          alpha/motion_est_mvi_asm.c    \
+                                          alpha/mpegvideo_alpha.c       \
+                                          alpha/simple_idct_alpha.c     \
+
+objs-$(ARCH_ARM)                       += arm/dsputil_init_arm.c        \
+                                          arm/dsputil_arm.c             \
+                                          arm/fft_init_arm.c            \
+                                          arm/jrevdct_arm.c             \
+                                          arm/mpegvideo_arm.c           \
+                                          arm/simple_idct_arm.c         \
+
+objs-$(HAVE_ARMV5TE)                   += arm/dsputil_init_armv5te.c    \
+                                          arm/mpegvideo_armv5te.c       \
+                                          arm/mpegvideo_armv5te_s.c     \
+                                          arm/simple_idct_armv5te.c     \
+
+objs-$(HAVE_ARMV6)                     += arm/dsputil_init_armv6.c      \
+                                          arm/dsputil_armv6.c           \
+                                          arm/simple_idct_armv6.c       \
+
+objs-$(HAVE_ARMVFP)                    += arm/dsputil_vfp.c             \
+                                          arm/dsputil_init_vfp.c        \
+
+objs-$(HAVE_IWMMXT)                    += arm/dsputil_iwmmxt.c          \
+                                          arm/mpegvideo_iwmmxt.c        \
+
+NEON-objs-@(FFT)                += arm/fft_neon.c                \
+
+NEON-objs-@(MDCT)               += arm/mdct_neon.c               \
+
+NEON-objs-@(H264_DECODER)       += arm/h264dsp_neon.c            \
+                                          arm/h264idct_neon.c           \
+
+NEON-objs-@(VP3_DECODER)        += arm/vp3dsp_neon.c
+
+objs-$(HAVE_NEON)                      += arm/dsputil_init_neon.c       \
+                                          arm/dsputil_neon.c            \
+                                          arm/simple_idct_neon.c        \
+                                          $(NEON-objs-y)
+
+objs-$(ARCH_BFIN)                      += bfin/dsputil_bfin.c           \
+                                          bfin/fdct_bfin.c              \
+                                          bfin/idct_bfin.c              \
+                                          bfin/mpegvideo_bfin.c         \
+                                          bfin/pixels_bfin.c            \
+                                          bfin/vp3_bfin.c               \
+                                          bfin/vp3_idct_bfin.c          \
+
+objs-$(ARCH_PPC)                       += ppc/dsputil_ppc.c             \
+
+ALTIVEC-objs-@(H264_DECODER)    += ppc/h264_altivec.c
+ALTIVEC-objs-@(VC1_DECODER)     += ppc/vc1dsp_altivec.c
+ALTIVEC-objs-@(VP3_DECODER)     += ppc/vp3dsp_altivec.c
+ALTIVEC-objs-@(VP5_DECODER)     += ppc/vp3dsp_altivec.c
+ALTIVEC-objs-@(VP6_DECODER)     += ppc/vp3dsp_altivec.c
+
+objs-$(HAVE_ALTIVEC)                   += ppc/check_altivec.c           \
+                                          ppc/dsputil_altivec.c         \
+                                          ppc/fdct_altivec.c            \
+                                          ppc/fft_altivec.c             \
+                                          ppc/float_altivec.c           \
+                                          ppc/gmc_altivec.c             \
+                                          ppc/idct_altivec.c            \
+                                          ppc/int_altivec.c             \
+                                          ppc/mpegvideo_altivec.c       \
+                                          $(ALTIVEC-objs-y)
+
+objs-$(ARCH_SH4)                       += sh4/dsputil_align.c           \
+                                          sh4/dsputil_sh4.c             \
+                                          sh4/idct_sh4.c                \
+
+objs-@(MLIB)                    += mlib/dsputil_mlib.c           \
+
+objs-$(HAVE_MMI)                       += ps2/dsputil_mmi.c             \
+                                          ps2/idct_mmi.c                \
+                                          ps2/mpegvideo_mmi.c           \
+
+objs-$(HAVE_VIS)                       += sparc/dsputil_vis.c           \
+                                          sparc/simple_idct_vis.c       \
+
+CFLAGS += -ftup-n-is-zero
+ifeq (@(MPLAYER),y)
+: foreach $(objs-y) |> !cc |> %B.o {objs}
+: foreach $(X86-objs-y) |> !cc |> x86-%B.o {objs}
+: {objs} |> !ar |> libavcodec.a
+endif
