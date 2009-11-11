@@ -2873,8 +2873,8 @@ static void put_mspel8_mc22_c(uint8_t *dst, uint8_t *src, int stride){
     wmv2_mspel8_v_lowpass(dst, halfH+8, stride, 8, 8);
 }
 
+#if CONFIG_ANY_H263
 static void h263_v_loop_filter_c(uint8_t *src, int stride, int qscale){
-    if(CONFIG_ANY_H263) {
     int x;
     const int strength= ff_h263_loop_filter_strength[qscale];
 
@@ -2907,11 +2907,9 @@ static void h263_v_loop_filter_c(uint8_t *src, int stride, int qscale){
         src[x-2*stride] = p0 - d2;
         src[x+  stride] = p3 + d2;
     }
-    }
 }
 
 static void h263_h_loop_filter_c(uint8_t *src, int stride, int qscale){
-    if(CONFIG_ANY_H263) {
     int y;
     const int strength= ff_h263_loop_filter_strength[qscale];
 
@@ -2944,8 +2942,8 @@ static void h263_h_loop_filter_c(uint8_t *src, int stride, int qscale){
         src[y*stride-2] = p0 - d2;
         src[y*stride+1] = p3 + d2;
     }
-    }
 }
+#endif
 
 static void h261_loop_filter_c(uint8_t *src, int stride){
     int x,y,xy,yz;
@@ -4807,10 +4805,10 @@ void dsputil_init(DSPContext* c, AVCodecContext *avctx)
     c->h264_h_loop_filter_chroma_intra= h264_h_loop_filter_chroma_intra_c;
     c->h264_loop_filter_strength= NULL;
 
-    if (CONFIG_ANY_H263) {
-        c->h263_h_loop_filter= h263_h_loop_filter_c;
-        c->h263_v_loop_filter= h263_v_loop_filter_c;
-    }
+#if CONFIG_ANY_H263
+    c->h263_h_loop_filter= h263_h_loop_filter_c;
+    c->h263_v_loop_filter= h263_v_loop_filter_c;
+#endif
 
     if (CONFIG_VP3_DECODER) {
         c->vp3_h_loop_filter= ff_vp3_h_loop_filter_c;
