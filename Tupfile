@@ -1,6 +1,8 @@
 include_rules
 include $(GITTUP_ROOT)/mplayer/mplayer.tup
 
+HAVE_YASM = 1
+
 CFLAGS += -DHAVE_AV_CONFIG_H
 
 objs-y = allcodecs.c                                                      \
@@ -549,10 +551,10 @@ X86-objs-@(TRUEHD_DECODER)      += x86/mlpdsp.c
 
 #objs-y                       += $(X86-objs-y)
 
-YASM-objs-@(FFT)                += x86/fft_mmx.c                 \
-                                          $(YASM-objs-FFT-yes)
-YASM-objs-@(GPL)                += x86/h264_deblock_sse2.c       \
-                                          x86/h264_idct_sse2.c          \
+objs-@(HAVE_SSE)       += x86/fft_sse.c
+YASM-objs-@(FFT)                += x86/fft_mmx.asm
+YASM-objs-@(GPL)                += x86/h264_deblock_sse2.asm       \
+                                   x86/h264_idct_sse2.asm          \
 
 MMX-objs-@(CAVS_DECODER)        += x86/cavsdsp_mmx.c
 MMX-objs-@(ENCODERS)            += x86/dsputilenc_mmx.c
@@ -568,10 +570,9 @@ MMX-objs-@(VP6_DECODER)         += x86/vp3dsp_mmx.c              \
                                           x86/vp3dsp_sse2.c             \
                                           x86/vp6dsp_mmx.c              \
                                           x86/vp6dsp_sse2.c
-MMX-objs-$(HAVE_YASM)                  += x86/dsputil_yasm.c            \
-                                          $(YASM-objs-y)
+YASM-objs-@(HAVE_MMX) += x86/dsputil_yasm.asm
 
-objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
+X86-objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
                                           x86/dnxhd_mmx.c               \
                                           x86/dsputil_mmx.c             \
                                           x86/fdct_mmx.c                \
@@ -581,6 +582,7 @@ objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
                                           x86/motion_est_mmx.c          \
                                           x86/mpegvideo_mmx.c           \
                                           x86/simple_idct_mmx.c         \
+					  $(MMX-objs-y)
 
 objs-$(ARCH_ALPHA)                     += alpha/dsputil_alpha.c         \
                                           alpha/dsputil_alpha_asm.c     \
@@ -668,6 +670,7 @@ objs-$(HAVE_VIS)                       += sparc/dsputil_vis.c           \
 CFLAGS += -ftup-n-is-zero
 ifeq (@(MPLAYER),y)
 : foreach $(objs-y) |> !cc |> %B.o {objs}
+: foreach $(YASM-objs-y) |> yasm -f ELF %f |> %B.o {objs}
 : foreach $(X86-objs-y) |> !cc |> x86-%B.o {objs}
 : {objs} |> !ar |> libavcodec.a
 endif
