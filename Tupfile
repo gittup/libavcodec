@@ -38,8 +38,7 @@ objs-@(VAAPI)                   += vaapi.c
 objs-@(VDPAU)                   += vdpau.c
 
 # decoders/encoders/hardware accelerators
-objs-@(AAC_DECODER)             += aac.c aactab.c mpeg4audio.c \
-                                          aac_parser.c aac_ac3_parser.c
+objs-@(AAC_DECODER)             += aac.c aactab.c
 objs-@(AAC_ENCODER)             += aacenc.c aaccoder.c    \
                                           aacpsy.c aactab.c      \
                                           psymodel.c iirfilter.c \
@@ -456,8 +455,6 @@ objs-@(NUT_MUXER)               += mpegaudiodata.c
 objs-@(OGG_DEMUXER)             += flacdec.c flacdata.c flac.c
 objs-@(OGG_MUXER)               += xiph.c flacdec.c flacdata.c flac.c
 objs-@(RTP_MUXER)               += mpegvideo.c
-objs-@(SPDIF_MUXER)             += aac_parser.c aac_ac3_parser.c \
-                                          mpeg4audio.c
 
 # external codec libraries
 objs-@(LIBDIRAC_DECODER)           += libdiracdec.c
@@ -517,8 +514,7 @@ objs-@(VC1_PARSER)              += vc1_parser.c vc1.c vc1data.c \
 objs-@(VP3_PARSER)              += vp3_parser.c
 
 # bitstream filters
-objs-@(AAC_ADTSTOASC_BSF)          += aac_adtstoasc_bsf.c aac_parser.c \
-                                             aac_ac3_parser.c mpeg4audio.c
+objs-@(AAC_ADTSTOASC_BSF)          += aac_adtstoasc_bsf.c
 objs-@(DUMP_EXTRADATA_BSF)         += dump_extradata_bsf.c
 objs-@(H264_MP4TOANNEXB_BSF)       += h264_mp4toannexb_bsf.c
 objs-@(IMX_DUMP_HEADER_BSF)        += imx_dump_header_bsf.c
