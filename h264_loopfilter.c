@@ -445,8 +445,6 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
     int edge;
     const int mbm_xy = dir == 0 ? mb_xy -1 : h->top_mb_xy;
     const int mbm_type = s->current_picture.mb_type[mbm_xy];
-    int (*ref2frm) [64] = h->ref2frm[ h->slice_num          &(MAX_SLICES-1) ][0] + (MB_MBAFF ? 20 : 2);
-    int (*ref2frmm)[64] = h->ref2frm[ h->slice_table[mbm_xy]&(MAX_SLICES-1) ][0] + (MB_MBAFF ? 20 : 2);
     int start = h->slice_table[mbm_xy] == 0xFFFF ? 1 : 0;
 
     const int edges = (mb_type & (MB_TYPE_16x16|MB_TYPE_SKIP))
@@ -472,7 +470,6 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
         // be done twice (one each of the field) even if we are in a
         // frame macroblock.
         //
-        static const int nnz_idx[4] = {4,5,6,3};
         unsigned int tmp_linesize   = 2 *   linesize;
         unsigned int tmp_uvlinesize = 2 * uvlinesize;
         int mbn_xy = mb_xy - 2 * s->mb_stride;
@@ -488,7 +485,7 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
                 const uint8_t *mbn_nnz = h->non_zero_count[mbn_xy];
                 for( i = 0; i < 4; i++ ) {
                     if( h->non_zero_count_cache[scan8[0]+i] != 0 ||
-                        mbn_nnz[nnz_idx[i]] != 0 )
+                        mbn_nnz[i+4+3*8] != 0 )
                         bS[i] = 2;
                     else
                         bS[i] = 1;
@@ -514,7 +511,6 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
         /* mbn_xy: neighbor macroblock */
         const int mbn_xy = edge > 0 ? mb_xy : mbm_xy;
         const int mbn_type = s->current_picture.mb_type[mbn_xy];
-        int (*ref2frmn)[64] = edge > 0 ? ref2frm : ref2frmm;
         int16_t bS[4];
         int qp;
 
@@ -554,7 +550,7 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
                 int v = 0;
 
                 for( l = 0; !v && l < 1 + (h->slice_type_nos == FF_B_TYPE); l++ ) {
-                    v |= ref2frm[l][h->ref_cache[l][b_idx]] != ref2frmn[l][h->ref_cache[l][bn_idx]] |
+                    v |= h->ref_cache[l][b_idx] != h->ref_cache[l][bn_idx] |
                          h->mv_cache[l][b_idx][0] - h->mv_cache[l][bn_idx][0] + 3 >= 7U |
                          FFABS( h->mv_cache[l][b_idx][1] - h->mv_cache[l][bn_idx][1] ) >= mvy_limit;
                 }
@@ -563,7 +559,7 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
                     v=0;
                     for( l = 0; !v && l < 2; l++ ) {
                         int ln= 1-l;
-                        v |= ref2frm[l][h->ref_cache[l][b_idx]] != ref2frmn[ln][h->ref_cache[ln][bn_idx]] |
+                        v |= h->ref_cache[l][b_idx] != h->ref_cache[ln][bn_idx] |
                             h->mv_cache[l][b_idx][0] - h->mv_cache[ln][bn_idx][0] + 3 >= 7U |
                             FFABS( h->mv_cache[l][b_idx][1] - h->mv_cache[ln][bn_idx][1] ) >= mvy_limit;
                     }
@@ -589,7 +585,7 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
                 {
                     bS[i] = 0;
                     for( l = 0; l < 1 + (h->slice_type_nos == FF_B_TYPE); l++ ) {
-                        if( ref2frm[l][h->ref_cache[l][b_idx]] != ref2frmn[l][h->ref_cache[l][bn_idx]] |
+                        if( h->ref_cache[l][b_idx] != h->ref_cache[l][bn_idx] |
                             h->mv_cache[l][b_idx][0] - h->mv_cache[l][bn_idx][0] + 3 >= 7U |
                             FFABS( h->mv_cache[l][b_idx][1] - h->mv_cache[l][bn_idx][1] ) >= mvy_limit ) {
                             bS[i] = 1;
@@ -601,7 +597,7 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
                         bS[i] = 0;
                         for( l = 0; l < 2; l++ ) {
                             int ln= 1-l;
-                            if( ref2frm[l][h->ref_cache[l][b_idx]] != ref2frmn[ln][h->ref_cache[ln][bn_idx]] |
+                            if( h->ref_cache[l][b_idx] != h->ref_cache[ln][bn_idx] |
                                 h->mv_cache[l][b_idx][0] - h->mv_cache[ln][bn_idx][0] + 3 >= 7U |
                                 FFABS( h->mv_cache[l][b_idx][1] - h->mv_cache[ln][bn_idx][1] ) >= mvy_limit ) {
                                 bS[i] = 1;
@@ -620,7 +616,7 @@ static av_always_inline void filter_mb_dir(H264Context *h, int mb_x, int mb_y, u
         // Do not use s->qscale as luma quantizer because it has not the same
         // value in IPCM macroblocks.
         qp = ( s->current_picture.qscale_table[mb_xy] + s->current_picture.qscale_table[mbn_xy] + 1 ) >> 1;
-        //tprintf(s->avctx, "filter mb:%d/%d dir:%d edge:%d, QPy:%d, QPc:%d, QPcn:%d\n", mb_x, mb_y, dir, edge, qp, h->chroma_qp, s->current_picture.qscale_table[mbn_xy]);
+        //tprintf(s->avctx, "filter mb:%d/%d dir:%d edge:%d, QPy:%d, QPc:%d, QPcn:%d\n", mb_x, mb_y, dir, edge, qp, h->chroma_qp[0], s->current_picture.qscale_table[mbn_xy]);
         tprintf(s->avctx, "filter mb:%d/%d dir:%d edge:%d, QPy:%d ls:%d uvls:%d", mb_x, mb_y, dir, edge, qp, linesize, uvlinesize);
         //{ int i; for (i = 0; i < 4; i++) tprintf(s->avctx, " bS[%d]:%d", i, bS[i]); tprintf(s->avctx, "\n"); }
         if( dir == 0 ) {
@@ -650,55 +646,7 @@ void ff_h264_filter_mb( H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint
     const int mvy_limit = IS_INTERLACED(mb_type) ? 2 : 4;
     int first_vertical_edge_done = 0;
     av_unused int dir;
-
-    //for sufficiently low qp, filtering wouldn't do anything
-    //this is a conservative estimate: could also check beta_offset and more accurate chroma_qp
-    if(!FRAME_MBAFF){
-        int qp_thresh = h->qp_thresh;
-        int qp = s->current_picture.qscale_table[mb_xy];
-        if(qp <= qp_thresh
-           && (mb_x == 0 || ((qp + s->current_picture.qscale_table[mb_xy-1] + 1)>>1) <= qp_thresh)
-           && (h->top_mb_xy < 0 || ((qp + s->current_picture.qscale_table[h->top_mb_xy] + 1)>>1) <= qp_thresh)){
-            return;
-        }
-    }
-
-    // CAVLC 8x8dct requires NNZ values for residual decoding that differ from what the loop filter needs
-    if(!h->pps.cabac && h->pps.transform_8x8_mode){
-        int top_type, left_type[2];
-        top_type     = s->current_picture.mb_type[h->top_mb_xy]    ;
-        left_type[0] = s->current_picture.mb_type[h->left_mb_xy[0]];
-        left_type[1] = s->current_picture.mb_type[h->left_mb_xy[1]];
-
-        if(IS_8x8DCT(top_type)){
-            h->non_zero_count_cache[4+8*0]=
-            h->non_zero_count_cache[5+8*0]= h->cbp_table[h->top_mb_xy] & 4;
-            h->non_zero_count_cache[6+8*0]=
-            h->non_zero_count_cache[7+8*0]= h->cbp_table[h->top_mb_xy] & 8;
-        }
-        if(IS_8x8DCT(left_type[0])){
-            h->non_zero_count_cache[3+8*1]=
-            h->non_zero_count_cache[3+8*2]= h->cbp_table[h->left_mb_xy[0]]&2; //FIXME check MBAFF
-        }
-        if(IS_8x8DCT(left_type[1])){
-            h->non_zero_count_cache[3+8*3]=
-            h->non_zero_count_cache[3+8*4]= h->cbp_table[h->left_mb_xy[1]]&8; //FIXME check MBAFF
-        }
-
-        if(IS_8x8DCT(mb_type)){
-            h->non_zero_count_cache[scan8[0   ]]= h->non_zero_count_cache[scan8[1   ]]=
-            h->non_zero_count_cache[scan8[2   ]]= h->non_zero_count_cache[scan8[3   ]]= h->cbp & 1;
-
-            h->non_zero_count_cache[scan8[0+ 4]]= h->non_zero_count_cache[scan8[1+ 4]]=
-            h->non_zero_count_cache[scan8[2+ 4]]= h->non_zero_count_cache[scan8[3+ 4]]= h->cbp & 2;
-
-            h->non_zero_count_cache[scan8[0+ 8]]= h->non_zero_count_cache[scan8[1+ 8]]=
-            h->non_zero_count_cache[scan8[2+ 8]]= h->non_zero_count_cache[scan8[3+ 8]]= h->cbp & 4;
-
-            h->non_zero_count_cache[scan8[0+12]]= h->non_zero_count_cache[scan8[1+12]]=
-            h->non_zero_count_cache[scan8[2+12]]= h->non_zero_count_cache[scan8[3+12]]= h->cbp & 8;
-        }
-    }
+    int list;
 
     if (FRAME_MBAFF
             // left mb is in picture
@@ -732,7 +680,7 @@ void ff_h264_filter_mb( H264Context *h, int mb_x, int mb_y, uint8_t *img_y, uint
                          ((!h->pps.cabac && IS_8x8DCT(s->current_picture.mb_type[mbn_xy])) ?
                             (h->cbp_table[mbn_xy] & ((MB_FIELD ? (i&2) : (mb_y&1)) ? 8 : 2))
                                                                        :
-                            h->non_zero_count[mbn_xy][MB_FIELD ? i&3 : (i>>2)+(mb_y&1)*2]))
+                            h->non_zero_count[mbn_xy][7+(MB_FIELD ? (i&3) : (i>>2)+(mb_y&1)*2)*8]))
                     bS[i] = 2;
                 else
                     bS[i] = 1;
