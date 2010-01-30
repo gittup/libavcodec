@@ -131,7 +131,7 @@ objs-@(H263_VAAPI_HWACCEL)      += vaapi_mpeg4.c
 objs-@(H263_ENCODER)            += mpegvideo_enc.c mpeg4video.c mpeg4videoenc.c motion_est.c      \
                                           ratecontrol.c h263.c ituh263enc.c flvenc.c mpeg12data.c \
                                           mpegvideo.c error_resilience.c
-objs-@(H264_DECODER)            += h264.c h264idct.c h264pred.c cabac.c \
+objs-@(H264_DECODER)            += h264.c svq3.c h264idct.c h264pred.c cabac.c \
                                           mpegvideo.c error_resilience.c
 objs-@(H264_ENCODER)            += h264enc.c h264dspenc.c
 objs-@(H264_VAAPI_HWACCEL)      += vaapi_h264.c
