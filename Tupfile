@@ -124,10 +124,10 @@ objs-@(H261_ENCODER)            += h261enc.c h261.c             \
                                           mpegvideo_enc.c motion_est.c \
                                           ratecontrol.c mpeg12data.c   \
                                           mpegvideo.c
-objs-@(H263_DECODER)            += h263dec.c h263.c flvdec.c intelh263dec.c \
+objs-@(H263_DECODER)            += h263dec.c h263.c mpeg4video.c mpeg4videodec.c flvdec.c intelh263dec.c \
                                           mpegvideo.c error_resilience.c
 objs-@(H263_VAAPI_HWACCEL)      += vaapi_mpeg4.c
-objs-@(H263_ENCODER)            += mpegvideo_enc.c motion_est.c      \
+objs-@(H263_ENCODER)            += mpegvideo_enc.c mpeg4video.c mpeg4videoenc.c motion_est.c      \
                                           ratecontrol.c h263.c flvenc.c mpeg12data.c \
                                           mpegvideo.c error_resilience.c
 objs-@(H264_DECODER)            += h264.c h264idct.c h264pred.c cabac.c \
