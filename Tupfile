@@ -308,9 +308,7 @@ objs-@(V210X_DECODER)           += v210x.c
 objs-@(VB_DECODER)              += vb.c
 objs-@(VC1_DECODER)             += vc1dec.c vc1.c vc1data.c vc1dsp.c \
                                           msmpeg4.c msmpeg4data.c           \
-                                          h263dec.c h263.c                  \
-                                          intrax8.c intrax8dsp.c            \
-                                          mpegvideo.c error_resilience.c
+                                          intrax8.c intrax8dsp.c
 objs-@(VC1_VAAPI_HWACCEL)       += vaapi_vc1.c
 objs-@(VCR1_DECODER)            += vcr1.c
 objs-@(VCR1_ENCODER)            += vcr1.c
@@ -333,13 +331,9 @@ objs-@(WMAV1_DECODER)           += wmadec.c wma.c
 objs-@(WMAV1_ENCODER)           += wmaenc.c wma.c
 objs-@(WMAV2_DECODER)           += wmadec.c wma.c
 objs-@(WMAV2_ENCODER)           += wmaenc.c wma.c
-objs-@(WMV1_DECODER)            += h263dec.c h263.c \
-                                          mpegvideo.c error_resilience.c
 objs-@(WMV2_DECODER)            += wmv2dec.c wmv2.c        \
                                           msmpeg4.c msmpeg4data.c \
-                                          h263dec.c h263.c        \
-                                          intrax8.c intrax8dsp.c  \
-                                          mpegvideo.c error_resilience.c
+                                          intrax8.c intrax8dsp.c
 objs-@(WMV2_ENCODER)            += wmv2enc.c wmv2.c \
                                           msmpeg4.c msmpeg4data.c
 objs-@(WNV1_DECODER)            += wnv1.c
