@@ -290,7 +290,6 @@ objs-@(TIERTEXSEQVIDEO_DECODER) += tiertexseqv.c
 objs-@(TIFF_DECODER)            += tiff.c lzw.c faxcompr.c
 objs-@(TIFF_ENCODER)            += tiffenc.c rle.c lzwenc.c
 objs-@(TMV_DECODER)             += tmv.c cga_data.c
-objs-@(TRUEHD_DECODER)          += mlpdec.c mlp_parser.c mlp.c mlpdsp.c
 objs-@(TRUEMOTION1_DECODER)     += truemotion1.c
 objs-@(TRUEMOTION2_DECODER)     += truemotion2.c
 objs-@(TRUESPEECH_DECODER)      += truespeech.c
