@@ -137,6 +137,7 @@ objs-@(H264_DECODER)            += h264.c h264idct.c h264pred.c \
                                           h264_parser.c cabac.c        \
                                           mpegvideo.c error_resilience.c
 objs-@(H264_ENCODER)            += h264enc.c h264dspenc.c
+objs-@(H264_VAAPI_HWACCEL)      += vaapi_h264.c
 objs-@(HUFFYUV_DECODER)         += huffyuv.c
 objs-@(HUFFYUV_ENCODER)         += huffyuv.c
 objs-@(IDCIN_DECODER)           += idcinvideo.c
