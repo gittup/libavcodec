@@ -134,6 +134,7 @@ int h263_get_picture_format(int width, int height)
 }
 
 void ff_h263_show_pict_info(MpegEncContext *s){
+    if(s->avctx->debug&FF_DEBUG_PICT_INFO){
     av_log(s->avctx, AV_LOG_DEBUG, "qp:%d %c size:%d rnd:%d%s%s%s%s%s%s%s%s%s %d/%d\n",
          s->qscale, av_get_pict_type_char(s->pict_type),
          s->gb.size_in_bits, 1-s->no_rounding,
@@ -148,6 +149,7 @@ void ff_h263_show_pict_info(MpegEncContext *s){
          s->h263_slice_structured ? " SS" : "",
          s->avctx->time_base.den, s->avctx->time_base.num
     );
+    }
 }
 
 #if CONFIG_ENCODERS
@@ -339,6 +341,10 @@ void h263_encode_gob_header(MpegEncContext * s, int mb_line)
     }
 }
 
+/**
+ * Returns the number of bits that encoding the 8x8 block in block would need.
+ * @param[in]  block_last_index last index in scantable order that refers to a non zero element in block.
+ */
 static inline int get_block_rate(MpegEncContext * s, DCTELEM block[64], int block_last_index, uint8_t scantable[64]){
     int last=0;
     int j;
@@ -362,7 +368,47 @@ static inline int get_block_rate(MpegEncContext * s, DCTELEM block[64], int bloc
     return rate;
 }
 
-static inline int decide_ac_pred(MpegEncContext * s, DCTELEM block[6][64], int dir[6], uint8_t *st[6], int zigzag_last_index[6])
+
+/**
+ * Restores the ac coefficients in block that have been changed by decide_ac_pred().
+ * This function also restores s->block_last_index.
+ * @param[in,out] block MB coefficients, these will be restored
+ * @param[in] dir ac prediction direction for each 8x8 block
+ * @param[out] st scantable for each 8x8 block
+ * @param[in] zigzag_last_index index refering to the last non zero coefficient in zigzag order
+ */
+static inline void restore_ac_coeffs(MpegEncContext * s, DCTELEM block[6][64], const int dir[6], uint8_t *st[6], const int zigzag_last_index[6])
+{
+    int i, n;
+    memcpy(s->block_last_index, zigzag_last_index, sizeof(int)*6);
+
+    for(n=0; n<6; n++){
+        int16_t *ac_val = s->ac_val[0][0] + s->block_index[n] * 16;
+
+        st[n]= s->intra_scantable.permutated;
+        if(dir[n]){
+            /* top prediction */
+            for(i=1; i<8; i++){
+                block[n][s->dsp.idct_permutation[i   ]] = ac_val[i+8];
+            }
+        }else{
+            /* left prediction */
+            for(i=1; i<8; i++){
+                block[n][s->dsp.idct_permutation[i<<3]]= ac_val[i  ];
+            }
+        }
+    }
+}
+
+/**
+ * Returns the optimal value (0 or 1) for the ac_pred element for the given MB in mpeg4.
+ * This function will also update s->block_last_index and s->ac_val.
+ * @param[in,out] block MB coefficients, these will be updated if 1 is returned
+ * @param[in] dir ac prediction direction for each 8x8 block
+ * @param[out] st scantable for each 8x8 block
+ * @param[out] zigzag_last_index index refering to the last non zero coefficient in zigzag order
+ */
+static inline int decide_ac_pred(MpegEncContext * s, DCTELEM block[6][64], const int dir[6], uint8_t *st[6], int zigzag_last_index[6])
 {
     int score= 0;
     int i, n;
@@ -430,29 +476,11 @@ static inline int decide_ac_pred(MpegEncContext * s, DCTELEM block[6][64], int d
         score += get_block_rate(s, block[n], s->block_last_index[n], st[n]);
     }
 
-    return score < 0;
-}
-
-static inline void restore_ac_coeffs(MpegEncContext * s, DCTELEM block[6][64], int dir[6], uint8_t *st[6], int zigzag_last_index[6])
-{
-    int i, n;
-    memcpy(s->block_last_index, zigzag_last_index, sizeof(int)*6);
-
-    for(n=0; n<6; n++){
-        int16_t *ac_val = s->ac_val[0][0] + s->block_index[n] * 16;
-
-        st[n]= s->intra_scantable.permutated;
-        if(dir[n]){
-            /* top prediction */
-            for(i=1; i<8; i++){
-                block[n][s->dsp.idct_permutation[i   ]] = ac_val[i+8];
-            }
-        }else{
-            /* left prediction */
-            for(i=1; i<8; i++){
-                block[n][s->dsp.idct_permutation[i<<3]]= ac_val[i  ];
-            }
-        }
+    if(score < 0){
+        return 1;
+    }else{
+        restore_ac_coeffs(s, block, dir, st, zigzag_last_index);
+        return 0;
     }
 }
 
@@ -1444,8 +1472,6 @@ void mpeg4_encode_mb(MpegEncContext * s,
 
         if(s->flags & CODEC_FLAG_AC_PRED){
             s->ac_pred= decide_ac_pred(s, block, dir, scan_table, zigzag_last_index);
-            if(!s->ac_pred)
-                restore_ac_coeffs(s, block, dir, scan_table, zigzag_last_index);
         }else{
             for(i=0; i<6; i++)
                 scan_table[i]= s->intra_scantable.permutated;
@@ -5358,9 +5384,7 @@ int h263_decode_picture_header(MpegEncContext *s)
         s->c_dc_scale_table= ff_mpeg1_dc_scale_table;
     }
 
-     if(s->avctx->debug&FF_DEBUG_PICT_INFO){
         ff_h263_show_pict_info(s);
-     }
     if (s->pict_type == FF_I_TYPE && s->codec_tag == AV_RL32("ZYGO")){
         int i,j;
         for(i=0; i<85; i++) av_log(s->avctx, AV_LOG_DEBUG, "%d", get_bits1(&s->gb));
