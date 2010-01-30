@@ -27,6 +27,7 @@ objs = allcodecs.c                                                      \
 # parts needed for many different codecs
 objs-@(AANDCT)                  += aandcttab.c
 objs-@(ENCODERS)                += faandct.c jfdctfst.c jfdctint.c
+objs-@(DCT)                     += dct.c
 FFT-objs-@(HARDCODED_TABLES)    += cos_tables.c
 objs-@(FFT)                     += fft.c $(FFT-objs-y)
 objs-@(GOLOMB)                  += golomb.c
