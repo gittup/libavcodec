@@ -251,11 +251,9 @@ objs-@(ROQ_ENCODER)             += roqvideoenc.c roqvideo.c elbg.c
 objs-@(ROQ_DPCM_DECODER)        += dpcm.c
 objs-@(ROQ_DPCM_ENCODER)        += roqaudioenc.c
 objs-@(RPZA_DECODER)            += rpza.c
-objs-@(RV10_DECODER)            += rv10.c h263.c \
-                                          mpegvideo.c error_resilience.c
+objs-@(RV10_DECODER)            += rv10.c
 objs-@(RV10_ENCODER)            += rv10enc.c
-objs-@(RV20_DECODER)            += rv10.c h263.c \
-                                          mpegvideo.c error_resilience.c
+objs-@(RV20_DECODER)            += rv10.c
 objs-@(RV20_ENCODER)            += rv20enc.c
 objs-@(RV30_DECODER)            += rv30.c rv34.c h264pred.c rv30dsp.c \
                                           mpegvideo.c error_resilience.c
