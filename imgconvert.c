@@ -278,22 +278,6 @@ static const PixFmtInfo pix_fmt_info[PIX_FMT_NB] = {
         .pixel_type = FF_PIXEL_PALETTE,
         .depth = 8,
     },
-    [PIX_FMT_XVMC_MPEG2_MC] = {
-    },
-    [PIX_FMT_XVMC_MPEG2_IDCT] = {
-    },
-    [PIX_FMT_VDPAU_MPEG1] = {
-    },
-    [PIX_FMT_VDPAU_MPEG2] = {
-    },
-    [PIX_FMT_VDPAU_H264] = {
-    },
-    [PIX_FMT_VDPAU_WMV3] = {
-    },
-    [PIX_FMT_VDPAU_VC1] = {
-    },
-    [PIX_FMT_VDPAU_MPEG4] = {
-    },
     [PIX_FMT_UYYVYY411] = {
         .nb_channels = 1,
         .color_type = FF_COLOR_YUV,
@@ -390,14 +374,6 @@ static const PixFmtInfo pix_fmt_info[PIX_FMT_NB] = {
         .color_type = FF_COLOR_RGB,
         .pixel_type = FF_PIXEL_PACKED,
         .depth = 8,
-    },
-
-    /* VA API formats */
-    [PIX_FMT_VAAPI_MOCO] = {
-    },
-    [PIX_FMT_VAAPI_IDCT] = {
-    },
-    [PIX_FMT_VAAPI_VLD] = {
     },
 };
 
@@ -926,7 +902,7 @@ static enum PixelFormat avcodec_find_best_pix_fmt1(int64_t pix_fmt_mask,
     enum PixelFormat dst_pix_fmt;
 
     /* find exact color match with smallest size */
-    dst_pix_fmt = -1;
+    dst_pix_fmt = PIX_FMT_NONE;
     min_dist = 0x7fffffff;
     for(i = 0;i < PIX_FMT_NB; i++) {
         if (pix_fmt_mask & (1ULL << i)) {
@@ -969,7 +945,7 @@ enum PixelFormat avcodec_find_best_pix_fmt(int64_t pix_fmt_mask, enum PixelForma
         if (loss_mask == 0)
             break;
     }
-    return -1;
+    return PIX_FMT_NONE;
  found:
     if (loss_ptr)
         *loss_ptr = avcodec_get_pix_fmt_loss(dst_pix_fmt, src_pix_fmt, has_alpha);
