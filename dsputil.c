@@ -2975,7 +2975,7 @@ static void h261_loop_filter_c(uint8_t *src, int stride){
     }
 }
 
-static inline void h264_loop_filter_luma_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta, int8_t *tc0)
+static av_always_inline av_flatten void h264_loop_filter_luma_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta, int8_t *tc0)
 {
     int i, d;
     for( i = 0; i < 4; i++ ) {
@@ -2999,10 +2999,12 @@ static inline void h264_loop_filter_luma_c(uint8_t *pix, int xstride, int ystrid
                 int i_delta;
 
                 if( FFABS( p2 - p0 ) < beta ) {
+                    if(tc0[i])
                     pix[-2*xstride] = p1 + av_clip( (( p2 + ( ( p0 + q0 + 1 ) >> 1 ) ) >> 1) - p1, -tc0[i], tc0[i] );
                     tc++;
                 }
                 if( FFABS( q2 - q0 ) < beta ) {
+                    if(tc0[i])
                     pix[   xstride] = q1 + av_clip( (( q2 + ( ( p0 + q0 + 1 ) >> 1 ) ) >> 1) - q1, -tc0[i], tc0[i] );
                     tc++;
                 }
@@ -3024,7 +3026,7 @@ static void h264_h_loop_filter_luma_c(uint8_t *pix, int stride, int alpha, int b
     h264_loop_filter_luma_c(pix, 1, stride, alpha, beta, tc0);
 }
 
-static inline void h264_loop_filter_luma_intra_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta)
+static av_always_inline av_flatten void h264_loop_filter_luma_intra_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta)
 {
     int d;
     for( d = 0; d < 16; d++ ) {
@@ -3081,7 +3083,7 @@ static void h264_h_loop_filter_luma_intra_c(uint8_t *pix, int stride, int alpha,
     h264_loop_filter_luma_intra_c(pix, 1, stride, alpha, beta);
 }
 
-static inline void h264_loop_filter_chroma_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta, int8_t *tc0)
+static av_always_inline av_flatten void h264_loop_filter_chroma_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta, int8_t *tc0)
 {
     int i, d;
     for( i = 0; i < 4; i++ ) {
@@ -3118,7 +3120,7 @@ static void h264_h_loop_filter_chroma_c(uint8_t *pix, int stride, int alpha, int
     h264_loop_filter_chroma_c(pix, 1, stride, alpha, beta, tc0);
 }
 
-static inline void h264_loop_filter_chroma_intra_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta)
+static av_always_inline av_flatten void h264_loop_filter_chroma_intra_c(uint8_t *pix, int xstride, int ystride, int alpha, int beta)
 {
     int d;
     for( d = 0; d < 8; d++ ) {

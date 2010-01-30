@@ -35,10 +35,6 @@
 #include "h264_mvpred.h"
 #include "golomb.h"
 
-#if ARCH_X86
-#include "x86/h264_i386.h"
-#endif
-
 //#undef NDEBUG
 #include <assert.h>
 
@@ -911,14 +907,14 @@ decode_intra_mb:
             else                     cbp= golomb_to_inter_cbp_gray[cbp];
         }
     }
-    h->cbp = cbp;
 
     if(dct8x8_allowed && (cbp&15) && !IS_INTRA(mb_type)){
         if(get_bits1(&s->gb)){
             mb_type |= MB_TYPE_8x8DCT;
-            h->cbp_table[mb_xy]= cbp;
         }
     }
+    h->cbp=
+    h->cbp_table[mb_xy]= cbp;
     s->current_picture.mb_type[mb_xy]= mb_type;
 
     if(cbp || IS_INTRA16x16(mb_type)){

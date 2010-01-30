@@ -39,9 +39,6 @@
 #include "vdpau_internal.h"
 
 #include "cabac.h"
-#if ARCH_X86
-#include "x86/h264_i386.h"
-#endif
 
 //#undef NDEBUG
 #include <assert.h>
@@ -581,7 +578,7 @@ static void hl_motion(H264Context *h, uint8_t *dest_y, uint8_t *dest_cb, uint8_t
     if(IS_16X16(mb_type)){
         mc_part(h, 0, 1, 8, 0, dest_y, dest_cb, dest_cr, 0, 0,
                 qpix_put[0], chroma_put[0], qpix_avg[0], chroma_avg[0],
-                &weight_op[0], &weight_avg[0],
+                weight_op, weight_avg,
                 IS_DIR(mb_type, 0, 0), IS_DIR(mb_type, 0, 1));
     }else if(IS_16X8(mb_type)){
         mc_part(h, 0, 0, 4, 8, dest_y, dest_cb, dest_cr, 0, 0,
@@ -808,6 +805,7 @@ static void clone_tables(H264Context *dst, H264Context *src){
     dst->mvd_table[0]             = src->mvd_table[0];
     dst->mvd_table[1]             = src->mvd_table[1];
     dst->direct_table             = src->direct_table;
+    dst->list_counts              = src->list_counts;
 
     dst->s.obmc_scratchpad = NULL;
     ff_h264_pred_init(&dst->hpc, src->s.codec_id);
