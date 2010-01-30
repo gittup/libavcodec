@@ -666,7 +666,6 @@ objs-$(HAVE_MMI)                       += ps2/dsputil_mmi.c             \
 objs-$(HAVE_VIS)                       += sparc/dsputil_vis.c           \
                                           sparc/simple_idct_vis.c       \
 
-CFLAGS += -ftup-n-is-zero
 ifeq (@(MPLAYER),y)
 : foreach $(objs-y) |> !cc |> %B.o {objs}
 : foreach $(YASM-objs-y) |> yasm -f ELF %f |> %B.o {objs}
