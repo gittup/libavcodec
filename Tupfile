@@ -68,6 +68,7 @@ objs-@(BMP_ENCODER)             += bmpenc.c
 objs-@(C93_DECODER)             += c93.c
 objs-@(CAVS_DECODER)            += cavs.c cavsdec.c cavsdsp.c \
                                           mpeg12data.c mpegvideo.c
+objs-@(CDGRAPHICS_DECODER)      += cdgraphics.c
 objs-@(CINEPAK_DECODER)         += cinepak.c
 objs-@(CLJR_DECODER)            += cljr.c
 objs-@(CLJR_ENCODER)            += cljr.c
