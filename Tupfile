@@ -163,7 +163,7 @@ objs-@(MJPEG_ENCODER)           += mjpegenc.c mjpeg.c           \
                                           ratecontrol.c mpeg12data.c   \
                                           mpegvideo.c
 objs-@(MJPEGB_DECODER)          += mjpegbdec.c mjpegdec.c mjpeg.c
-objs-@(MLP_DECODER)             += mlpdec.c mlp_parser.c mlp.c mlpdsp.c
+objs-@(MLP_DECODER)             += mlpdec.c mlpdsp.c
 objs-@(MMVIDEO_DECODER)         += mmvideo.c
 objs-@(MOTIONPIXELS_DECODER)    += motionpixels.c
 objs-@(MP1_DECODER)             += mpegaudiodec.c mpegaudiodecheader.c \
