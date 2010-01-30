@@ -101,6 +101,7 @@ union float754 {
 static VLC vlc_scalefactors;
 static VLC vlc_spectral[11];
 
+static float cbrt_tab[1<<13];
 
 static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
 {
@@ -555,6 +556,10 @@ static av_cold int aac_decode_init(AVCodecContext *avccontext)
     ff_init_ff_sine_windows(10);
     ff_init_ff_sine_windows( 7);
 
+    if (!cbrt_tab[(1<<13) - 1])
+        for (i = 0; i < 1<<13; i++)
+            cbrt_tab[i] = cbrtf(i) * i;
+
     return 0;
 }
 
@@ -942,14 +947,14 @@ static int decode_spectrum_and_dequant(AACContext *ac, float coef[1024],
                                     if (vq_ptr[j] == 64.0f) {
                                         int n = 4;
                                         /* The total length of escape_sequence must be < 22 bits according
-                                           to the specification (i.e. max is 11111111110xxxxxxxxxx). */
-                                        while (get_bits1(gb) && n < 15) n++;
-                                        if (n == 15) {
+                                           to the specification (i.e. max is 111111110xxxxxxxxxxxx). */
+                                        while (get_bits1(gb) && n < 13) n++;
+                                        if (n == 13) {
                                             av_log(ac->avccontext, AV_LOG_ERROR, "error in spectral data, ESC overflow\n");
                                             return -1;
                                         }
                                         n = (1 << n) + get_bits(gb, n);
-                                        coef[coef_tmp_idx + j] *= cbrtf(n) * n;
+                                        coef[coef_tmp_idx + j] *= cbrt_tab[n];
                                     } else
                                         coef[coef_tmp_idx + j] *= vq_ptr[j];
                                 }

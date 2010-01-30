@@ -24,7 +24,7 @@
 
 /**
  * @file libavcodec/ituh263enc.c
- * h263 encoder.
+ * h263 bitstream encoder.
  */
 
 //#define DEBUG
@@ -38,6 +38,7 @@
 #include "unary.h"
 #include "flv.h"
 #include "mpeg4video.h"
+#include "internal.h"
 
 //#undef NDEBUG
 //#include <assert.h>
