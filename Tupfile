@@ -456,7 +456,8 @@ objs-@(NUT_MUXER)               += mpegaudiodata.c
 objs-@(OGG_DEMUXER)             += flacdec.c flacdata.c flac.c
 objs-@(OGG_MUXER)               += xiph.c flacdec.c flacdata.c flac.c
 objs-@(RTP_MUXER)               += mpegvideo.c
-objs-@(SPDIF_MUXER)             += aac_parser.c aac_ac3_parser.c
+objs-@(SPDIF_MUXER)             += aac_parser.c aac_ac3_parser.c \
+                                          mpeg4audio.c
 
 # external codec libraries
 objs-@(LIBDIRAC_DECODER)           += libdiracdec.c
