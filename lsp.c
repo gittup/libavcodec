@@ -47,7 +47,7 @@ void ff_acelp_reorder_lsf(int16_t* lsfq, int lsfq_min_distance, int lsfq_min, in
     lsfq[lp_order-1] = FFMIN(lsfq[lp_order-1], lsfq_max);//Is warning required ?
 }
 
-void ff_set_min_dist_lsf(float *lsf, float min_spacing, int size)
+void ff_set_min_dist_lsf(float *lsf, double min_spacing, int size)
 {
     int i;
     float prev = 0.0;
@@ -155,20 +155,21 @@ static void lsp2polyf(const double *lsp, double *f, int lp_half_order)
     }
 }
 
-void ff_acelp_lspd2lpc(const double *lsp, float *lpc)
+void ff_acelp_lspd2lpc(const double *lsp, float *lpc, int lp_half_order)
 {
-    double pa[6], qa[6];
-    int   i;
+    double pa[MAX_LP_HALF_ORDER+1], qa[MAX_LP_HALF_ORDER+1];
+    float *lpc2 = lpc + (lp_half_order << 1) - 1;
 
-    lsp2polyf(lsp,     pa, 5);
-    lsp2polyf(lsp + 1, qa, 5);
+    assert(lp_half_order <= MAX_LP_HALF_ORDER);
 
-    for (i=4; i>=0; i--)
-    {
-        double paf = pa[i+1] + pa[i];
-        double qaf = qa[i+1] - qa[i];
+    lsp2polyf(lsp,     pa, lp_half_order);
+    lsp2polyf(lsp + 1, qa, lp_half_order);
 
-        lpc[i  ] = 0.5*(paf+qaf);
-        lpc[9-i] = 0.5*(paf-qaf);
+    while (lp_half_order--) {
+        double paf = pa[lp_half_order+1] + pa[lp_half_order];
+        double qaf = qa[lp_half_order+1] - qa[lp_half_order];
+
+        lpc [ lp_half_order] = 0.5*(paf+qaf);
+        lpc2[-lp_half_order] = 0.5*(paf-qaf);
     }
 }

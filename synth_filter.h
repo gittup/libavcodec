@@ -18,10 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef AVCODEC_SYNTH_FILTER_H
+#define AVCODEC_SYNTH_FILTER_H
+
 #include "dsputil.h"
 
 void ff_synth_filter_float(FFTContext *imdct,
-                         float *synth_buf_ptr, int *synth_buf_offset,
-                         float synth_buf2[32], const float window[512],
-                         float out[32], const float in[32], float scale, float bias);
+                           float *synth_buf_ptr, int *synth_buf_offset,
+                           float synth_buf2[32], const float window[512],
+                           float out[32], const float in[32], float scale, float bias);
 
+#endif /* AVCODEC_SYNTH_FILTER_H */

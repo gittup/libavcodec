@@ -376,6 +376,11 @@ static const PixFmtInfo pix_fmt_info[PIX_FMT_NB] = {
         .is_hwaccel = 1,
         .x_chroma_shift = 1, .y_chroma_shift = 1,
     },
+    [PIX_FMT_VDPAU_MPEG4] = {
+        .name = "vdpau_mpeg4",
+        .is_hwaccel = 1,
+        .x_chroma_shift = 1, .y_chroma_shift = 1,
+    },
     [PIX_FMT_UYYVYY411] = {
         .name = "uyyvyy411",
         .nb_channels = 1,
@@ -1179,9 +1184,7 @@ void av_picture_copy(AVPicture *dst, const AVPicture *src,
                        src->data[0], src->linesize[0],
                        width, height);
         /* copy the palette */
-        ff_img_copy_plane(dst->data[1], dst->linesize[1],
-                       src->data[1], src->linesize[1],
-                       4, 256);
+        memcpy(dst->data[1], src->data[1], 4*256);
         break;
     }
 }
