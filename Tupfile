@@ -73,7 +73,7 @@ objs-@(CLJR_ENCODER)            += cljr.c
 objs-@(COOK_DECODER)            += cook.c
 objs-@(CSCD_DECODER)            += cscd.c
 objs-@(CYUV_DECODER)            += cyuv.c
-objs-@(DCA_DECODER)             += dca.c
+objs-@(DCA_DECODER)             += dca.c synth_filter.c
 objs-@(DNXHD_DECODER)           += dnxhddec.c dnxhddata.c
 objs-@(DNXHD_ENCODER)           += dnxhdenc.c dnxhddata.c       \
                                           mpegvideo_enc.c motion_est.c \
