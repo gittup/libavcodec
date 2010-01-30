@@ -390,7 +390,7 @@ static int decode_ga_specific_config(AACContext *ac, GetBitContext *gb,
         if ((ret = set_default_channel_config(ac, new_che_pos, channel_config)))
             return ret;
     }
-    if ((ret = output_configure(ac, ac->che_pos, new_che_pos, channel_config, OC_LOCKED)))
+    if ((ret = output_configure(ac, ac->che_pos, new_che_pos, channel_config, OC_GLOBAL_HDR)))
         return ret;
 
     if (extension_flag) {
@@ -1687,6 +1687,8 @@ static int parse_adts_frame_header(AACContext *ac, GetBitContext *gb)
         } else if (ac->output_configured != OC_LOCKED) {
             ac->output_configured = OC_NONE;
         }
+        if (ac->output_configured != OC_LOCKED)
+            ac->m4ac.sbr = -1;
         ac->m4ac.sample_rate     = hdr_info.sample_rate;
         ac->m4ac.sampling_index  = hdr_info.sampling_index;
         ac->m4ac.object_type     = hdr_info.object_type;
