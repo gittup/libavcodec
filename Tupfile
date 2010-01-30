@@ -1,9 +1,8 @@
 include_rules
 include $(GITTUP_ROOT)/mplayer/mplayer.tup
+include $(GITTUP_ROOT)/mplayer/common.tup
 
 HAVE_YASM = 1
-
-CFLAGS += -DHAVE_AV_CONFIG_H
 
 objs-y = allcodecs.c                                                      \
        audioconvert.c                                                   \
