@@ -247,6 +247,7 @@ objs-@(QDRAW_DECODER)           += qdrw.c
 objs-@(QPEG_DECODER)            += qpeg.c
 objs-@(QTRLE_DECODER)           += qtrle.c
 objs-@(QTRLE_ENCODER)           += qtrleenc.c
+objs-@(R210_DECODER)            += r210dec.c
 objs-@(RA_144_DECODER)          += ra144.c celp_filters.c
 objs-@(RA_288_DECODER)          += ra288.c celp_math.c celp_filters.c
 objs-@(RAWVIDEO_DECODER)        += rawdec.c
