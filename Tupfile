@@ -51,6 +51,7 @@ objs-@(AC3_DECODER)             += ac3dec.c ac3tab.c   \
 objs-@(AC3_ENCODER)             += ac3enc.c ac3tab.c ac3.c
 objs-@(ALAC_DECODER)            += alac.c
 objs-@(ALAC_ENCODER)            += alacenc.c
+objs-@(ALS_DECODER)             += alsdec.c
 objs-@(AMV_DECODER)             += sp5xdec.c mjpegdec.c mjpeg.c
 objs-@(APE_DECODER)             += apedec.c
 objs-@(ASV1_DECODER)            += asv1.c mpeg12data.c
