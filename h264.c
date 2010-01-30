@@ -31,6 +31,7 @@
 #include "mpegvideo.h"
 #include "h264.h"
 #include "h264data.h"
+#include "h264_mvpred.h"
 #include "h264_parser.h"
 #include "golomb.h"
 #include "mathops.h"
@@ -544,6 +545,45 @@ void ff_h264_write_back_intra_pred_mode(H264Context *h){
 /**
  * checks if the top & left blocks are available if needed & changes the dc mode so it only uses the available blocks.
  */
+int ff_h264_check_intra4x4_pred_mode(H264Context *h){
+    MpegEncContext * const s = &h->s;
+    static const int8_t top [12]= {-1, 0,LEFT_DC_PRED,-1,-1,-1,-1,-1, 0};
+    static const int8_t left[12]= { 0,-1, TOP_DC_PRED, 0,-1,-1,-1, 0,-1,DC_128_PRED};
+    int i;
+
+    if(!(h->top_samples_available&0x8000)){
+        for(i=0; i<4; i++){
+            int status= top[ h->intra4x4_pred_mode_cache[scan8[0] + i] ];
+            if(status<0){
+                av_log(h->s.avctx, AV_LOG_ERROR, "top block unavailable for requested intra4x4 mode %d at %d %d\n", status, s->mb_x, s->mb_y);
+                return -1;
+            } else if(status){
+                h->intra4x4_pred_mode_cache[scan8[0] + i]= status;
+            }
+        }
+    }
+
+    if((h->left_samples_available&0x8888)!=0x8888){
+        static const int mask[4]={0x8000,0x2000,0x80,0x20};
+        for(i=0; i<4; i++){
+            if(!(h->left_samples_available&mask[i])){
+                int status= left[ h->intra4x4_pred_mode_cache[scan8[0] + 8*i] ];
+                if(status<0){
+                    av_log(h->s.avctx, AV_LOG_ERROR, "left block unavailable for requested intra4x4 mode %d at %d %d\n", status, s->mb_x, s->mb_y);
+                    return -1;
+                } else if(status){
+                    h->intra4x4_pred_mode_cache[scan8[0] + 8*i]= status;
+                }
+            }
+        }
+    }
+
+    return 0;
+} //FIXME cleanup like ff_h264_check_intra_pred_mode
+
+/**
+ * checks if the top & left blocks are available if needed & changes the dc mode so it only uses the available blocks.
+ */
 int ff_h264_check_intra_pred_mode(H264Context *h, int mode){
     MpegEncContext * const s = &h->s;
     static const int8_t top [7]= {LEFT_DC_PRED8x8, 1,-1,-1};
@@ -626,97 +666,6 @@ static inline int pred_non_zero_count(H264Context *h, int n){
     tprintf(h->s.avctx, "pred_nnz L%X T%X n%d s%d P%X\n", left, top, n, scan8[n], i&31);
 
     return i&31;
-}
-
-/**
- * gets the directionally predicted 16x8 MV.
- * @param n the block index
- * @param mx the x component of the predicted motion vector
- * @param my the y component of the predicted motion vector
- */
-static inline void pred_16x8_motion(H264Context * const h, int n, int list, int ref, int * const mx, int * const my){
-    if(n==0){
-        const int top_ref=      h->ref_cache[list][ scan8[0] - 8 ];
-        const int16_t * const B= h->mv_cache[list][ scan8[0] - 8 ];
-
-        tprintf(h->s.avctx, "pred_16x8: (%2d %2d %2d) at %2d %2d %d list %d\n", top_ref, B[0], B[1], h->s.mb_x, h->s.mb_y, n, list);
-
-        if(top_ref == ref){
-            *mx= B[0];
-            *my= B[1];
-            return;
-        }
-    }else{
-        const int left_ref=     h->ref_cache[list][ scan8[8] - 1 ];
-        const int16_t * const A= h->mv_cache[list][ scan8[8] - 1 ];
-
-        tprintf(h->s.avctx, "pred_16x8: (%2d %2d %2d) at %2d %2d %d list %d\n", left_ref, A[0], A[1], h->s.mb_x, h->s.mb_y, n, list);
-
-        if(left_ref == ref){
-            *mx= A[0];
-            *my= A[1];
-            return;
-        }
-    }
-
-    //RARE
-    pred_motion(h, n, 4, list, ref, mx, my);
-}
-
-/**
- * gets the directionally predicted 8x16 MV.
- * @param n the block index
- * @param mx the x component of the predicted motion vector
- * @param my the y component of the predicted motion vector
- */
-static inline void pred_8x16_motion(H264Context * const h, int n, int list, int ref, int * const mx, int * const my){
-    if(n==0){
-        const int left_ref=      h->ref_cache[list][ scan8[0] - 1 ];
-        const int16_t * const A=  h->mv_cache[list][ scan8[0] - 1 ];
-
-        tprintf(h->s.avctx, "pred_8x16: (%2d %2d %2d) at %2d %2d %d list %d\n", left_ref, A[0], A[1], h->s.mb_x, h->s.mb_y, n, list);
-
-        if(left_ref == ref){
-            *mx= A[0];
-            *my= A[1];
-            return;
-        }
-    }else{
-        const int16_t * C;
-        int diagonal_ref;
-
-        diagonal_ref= fetch_diagonal_mv(h, &C, scan8[4], list, 2);
-
-        tprintf(h->s.avctx, "pred_8x16: (%2d %2d %2d) at %2d %2d %d list %d\n", diagonal_ref, C[0], C[1], h->s.mb_x, h->s.mb_y, n, list);
-
-        if(diagonal_ref == ref){
-            *mx= C[0];
-            *my= C[1];
-            return;
-        }
-    }
-
-    //RARE
-    pred_motion(h, n, 2, list, ref, mx, my);
-}
-
-static inline void pred_pskip_motion(H264Context * const h, int * const mx, int * const my){
-    const int top_ref = h->ref_cache[0][ scan8[0] - 8 ];
-    const int left_ref= h->ref_cache[0][ scan8[0] - 1 ];
-
-    tprintf(h->s.avctx, "pred_pskip: (%d) (%d) at %2d %2d\n", top_ref, left_ref, h->s.mb_x, h->s.mb_y);
-
-    if(top_ref == PART_NOT_AVAILABLE || left_ref == PART_NOT_AVAILABLE
-       || !( top_ref | *(uint32_t*)h->mv_cache[0][ scan8[0] - 8 ])
-       || !(left_ref | *(uint32_t*)h->mv_cache[0][ scan8[0] - 1 ])){
-
-        *mx = *my = 0;
-        return;
-    }
-
-    pred_motion(h, 0, 4, 0, 0, mx, my);
-
-    return;
 }
 
 static inline void write_back_motion(H264Context *h, int mb_type){
@@ -3277,7 +3226,7 @@ decode_intra_mb:
                     h->intra4x4_pred_mode_cache[ scan8[i] ] = mode;
             }
             ff_h264_write_back_intra_pred_mode(h);
-            if( check_intra4x4_pred_mode(h) < 0)
+            if( ff_h264_check_intra4x4_pred_mode(h) < 0)
                 return -1;
         }else{
             h->intra16x16_pred_mode= ff_h264_check_intra_pred_mode(h, h->intra16x16_pred_mode);
@@ -4378,7 +4327,7 @@ decode_intra_mb:
                 }
             }
             ff_h264_write_back_intra_pred_mode(h);
-            if( check_intra4x4_pred_mode(h) < 0 ) return -1;
+            if( ff_h264_check_intra4x4_pred_mode(h) < 0 ) return -1;
         } else {
             h->intra16x16_pred_mode= ff_h264_check_intra_pred_mode( h, h->intra16x16_pred_mode );
             if( h->intra16x16_pred_mode < 0 ) return -1;
