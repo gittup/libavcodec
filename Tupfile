@@ -450,7 +450,8 @@ objs-@(MATROSKA_MUXER)          += xiph.c mpeg4audio.c \
 objs-@(MOV_DEMUXER)             += mpeg4audio.c mpegaudiodata.c
 objs-@(MPEGTS_MUXER)            += mpegvideo.c
 objs-@(NUT_MUXER)               += mpegaudiodata.c
-objs-@(OGG_DEMUXER)             += flacdec.c flacdata.c flac.c
+objs-@(OGG_DEMUXER)             += flacdec.c flacdata.c flac.c \
+                                          dirac.c mpeg12data.c
 objs-@(OGG_MUXER)               += xiph.c flacdec.c flacdata.c flac.c
 objs-@(RTP_MUXER)               += mpegvideo.c
 
