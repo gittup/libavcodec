@@ -601,6 +601,7 @@ objs-$(ARCH_ALPHA)                     += alpha/dsputil_alpha.c         \
 objs-$(ARCH_ARM)                       += arm/dsputil_init_arm.c        \
                                           arm/dsputil_arm.c             \
                                           arm/fft_init_arm.c            \
+                                          arm/h264pred_init_arm.c       \
                                           arm/jrevdct_arm.c             \
                                           arm/mpegvideo_arm.c           \
                                           arm/simple_idct_arm.c         \
@@ -626,6 +627,7 @@ NEON-objs-@(MDCT)               += arm/mdct_neon.c               \
 
 NEON-objs-@(H264_DECODER)       += arm/h264dsp_neon.c            \
                                           arm/h264idct_neon.c           \
+                                          arm/h264pred_neon.c           \
 
 NEON-objs-@(VP3_DECODER)        += arm/vp3dsp_neon.c
 
