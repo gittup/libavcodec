@@ -667,8 +667,9 @@ retry:
             s->error_status_table[s->mb_num-1]= AC_ERROR|DC_ERROR|MV_ERROR;
         }
 
+    assert(s->bitstream_buffer_size==0);
     /* divx 5.01+ bistream reorder stuff */
-    if(s->codec_id==CODEC_ID_MPEG4 && s->bitstream_buffer_size==0 && s->divx_packed){
+    if(s->codec_id==CODEC_ID_MPEG4 && s->divx_packed){
         int current_pos= get_bits_count(&s->gb)>>3;
         int startcode_found=0;
 
@@ -681,7 +682,7 @@ retry:
                 }
             }
         }
-        if(s->gb.buffer == s->bitstream_buffer && buf_size>20){ //xvid style
+        if(s->gb.buffer == s->bitstream_buffer && buf_size>7 && s->xvid_build){ //xvid style
             startcode_found=1;
             current_pos=0;
         }
