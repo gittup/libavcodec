@@ -271,7 +271,8 @@ objs-@(SMC_DECODER)             += smc.c
 objs-@(SNOW_DECODER)            += snow.c rangecoder.c
 objs-@(SNOW_ENCODER)            += snow.c rangecoder.c motion_est.c \
                                           ratecontrol.c h263.c             \
-                                          mpegvideo.c error_resilience.c
+                                          mpegvideo.c error_resilience.c   \
+                                          ituh263enc.c mpegvideo_enc.c
 objs-@(SOL_DPCM_DECODER)        += dpcm.c
 objs-@(SONIC_DECODER)           += sonic.c
 objs-@(SONIC_ENCODER)           += sonic.c
