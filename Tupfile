@@ -263,7 +263,8 @@ objs-@(SGI_ENCODER)             += sgienc.c rle.c
 objs-@(SHORTEN_DECODER)         += shorten.c
 objs-@(SIPR_DECODER)            += sipr.c acelp_pitch_delay.c \
                                           celp_math.c acelp_vectors.c \
-                                          acelp_filters.c celp_filters.c lsp.c
+                                          acelp_filters.c celp_filters.c lsp.c \
+                                          sipr16k.c
 objs-@(SMACKAUD_DECODER)        += smacker.c
 objs-@(SMACKER_DECODER)         += smacker.c
 objs-@(SMC_DECODER)             += smc.c
