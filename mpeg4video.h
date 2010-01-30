@@ -54,13 +54,13 @@
 #define VOP_STARTCODE        0x1B6
 
 /* dc encoding for mpeg4 */
-extern const uint8_t DCtab_lum[13][2];
-extern const uint8_t DCtab_chrom[13][2];
+extern const uint8_t ff_mpeg4_DCtab_lum[13][2];
+extern const uint8_t ff_mpeg4_DCtab_chrom[13][2];
 
-extern const uint16_t intra_vlc[103][2];
-extern const int8_t intra_level[102];
-extern const int8_t intra_run[102];
-extern RLTable rl_intra;
+extern const uint16_t ff_mpeg4_intra_vlc[103][2];
+extern const int8_t ff_mpeg4_intra_level[102];
+extern const int8_t ff_mpeg4_intra_run[102];
+extern RLTable ff_mpeg4_rl_intra;
 
 /* Note this is identical to the intra rvlc except that it is reordered. */
 extern const uint16_t inter_rvlc[170][2];
@@ -75,7 +75,6 @@ extern RLTable rvlc_rl_intra;
 
 extern const uint16_t sprite_trajectory_tab[15][2];
 extern const uint8_t mb_type_b_tab[4][2];
-extern const AVRational pixel_aspect[16];
 
 /* these matrixes will be permuted for the idct */
 extern const int16_t ff_mpeg4_default_intra_matrix[64];
@@ -105,6 +104,13 @@ void ff_clean_mpeg4_qscales(MpegEncContext *s);
 int ff_mpeg4_decode_partitions(MpegEncContext *s);
 int ff_mpeg4_get_video_packet_prefix_length(MpegEncContext *s);
 int mpeg4_decode_video_packet_header(MpegEncContext *s);
+void ff_mpeg4_init_direct_mv(MpegEncContext *s);
+
+/**
+ *
+ * @return the mb_type
+ */
+int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my);
 
 extern uint8_t ff_mpeg4_static_rl_table_store[3][2][2*MAX_RUN + MAX_LEVEL + 3];
 

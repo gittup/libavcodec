@@ -840,8 +840,6 @@ void ff_clean_h263_qscales(MpegEncContext *s);
 int ff_h263_resync(MpegEncContext *s);
 const uint8_t *ff_h263_find_resync_marker(const uint8_t *p, const uint8_t *end);
 int ff_h263_get_gob_height(MpegEncContext *s);
-void ff_mpeg4_init_direct_mv(MpegEncContext *s);
-int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my);
 void ff_h263_encode_motion(MpegEncContext * s, int val, int f_code);
 void ff_init_qscale_tab(MpegEncContext *s);
 
@@ -860,7 +858,7 @@ void msmpeg4_encode_mb(MpegEncContext * s,
                        int motion_x, int motion_y);
 int msmpeg4_decode_picture_header(MpegEncContext * s);
 int msmpeg4_decode_ext_header(MpegEncContext * s, int buf_size);
-int ff_msmpeg4_decode_init(MpegEncContext *s);
+int ff_msmpeg4_decode_init(AVCodecContext *avctx);
 void ff_msmpeg4_encode_init(MpegEncContext *s);
 int ff_wmv2_decode_picture_header(MpegEncContext * s);
 int ff_wmv2_decode_secondary_picture_header(MpegEncContext * s);
