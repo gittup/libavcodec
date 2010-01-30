@@ -516,8 +516,7 @@ objs-@(MPEGVIDEO_PARSER)        += mpegvideo_parser.c    \
                                           mpegvideo.c error_resilience.c
 objs-@(PNM_PARSER)              += pnm_parser.c pnm.c
 objs-@(VC1_PARSER)              += vc1_parser.c vc1.c vc1data.c \
-                                          msmpeg4.c msmpeg4data.c      \
-                                          h263dec.c h263.c intrax8.c   \
+                                          msmpeg4.c msmpeg4data.c h263.c \
                                           mpegvideo.c error_resilience.c
 objs-@(VP3_PARSER)              += vp3_parser.c
 
