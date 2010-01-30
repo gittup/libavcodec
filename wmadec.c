@@ -240,8 +240,8 @@ static void decode_exp_lsp(WMACodecContext *s, int ch)
                      s->block_len, lsp_coefs);
 }
 
-/** pow(10, i / 16.0) for i in -60..67 */
-static const float pow_tab[128] = {
+/** pow(10, i / 16.0) for i in -60..95 */
+static const float pow_tab[] = {
     1.7782794100389e-04, 2.0535250264571e-04,
     2.3713737056617e-04, 2.7384196342644e-04,
     3.1622776601684e-04, 3.6517412725484e-04,
@@ -306,6 +306,20 @@ static const float pow_tab[128] = {
     7.4989420933246e+03, 8.6596432336007e+03,
     1.0000000000000e+04, 1.1547819846895e+04,
     1.3335214321633e+04, 1.5399265260595e+04,
+    1.7782794100389e+04, 2.0535250264571e+04,
+    2.3713737056617e+04, 2.7384196342644e+04,
+    3.1622776601684e+04, 3.6517412725484e+04,
+    4.2169650342858e+04, 4.8696752516586e+04,
+    5.6234132519035e+04, 6.4938163157621e+04,
+    7.4989420933246e+04, 8.6596432336007e+04,
+    1.0000000000000e+05, 1.1547819846895e+05,
+    1.3335214321633e+05, 1.5399265260595e+05,
+    1.7782794100389e+05, 2.0535250264571e+05,
+    2.3713737056617e+05, 2.7384196342644e+05,
+    3.1622776601684e+05, 3.6517412725484e+05,
+    4.2169650342858e+05, 4.8696752516586e+05,
+    5.6234132519035e+05, 6.4938163157621e+05,
+    7.4989420933246e+05, 8.6596432336007e+05,
 };
 
 /**
@@ -345,8 +359,11 @@ static int decode_exp_vlc(WMACodecContext *s, int ch)
             return -1;
         /* NOTE: this offset is the same as MPEG4 AAC ! */
         last_exp += code - 60;
-        if ((unsigned)last_exp + 60 > FF_ARRAY_ELEMS(pow_tab))
+        if ((unsigned)last_exp + 60 > FF_ARRAY_ELEMS(pow_tab)) {
+            av_log(s->avctx, AV_LOG_ERROR, "Exponent out of range: %d\n",
+                   last_exp);
             return -1;
+        }
         v = ptab[last_exp];
         iv = iptab[last_exp];
         if (v > max_scale)

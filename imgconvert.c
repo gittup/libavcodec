@@ -486,7 +486,7 @@ static const PixFmtInfo pix_fmt_info[PIX_FMT_NB] = {
         .x_chroma_shift = 1, .y_chroma_shift = 1,
     },
     [PIX_FMT_NV21] = {
-        .name = "nv12",
+        .name = "nv21",
         .nb_channels = 2,
         .color_type = FF_COLOR_YUV,
         .pixel_type = FF_PIXEL_PLANAR,
@@ -689,7 +689,7 @@ int ff_fill_linesize(AVPicture *picture, enum PixelFormat pix_fmt, int width)
     case PIX_FMT_NV21:
         w2 = (width + (1 << pinfo->x_chroma_shift) - 1) >> pinfo->x_chroma_shift;
         picture->linesize[0] = width;
-        picture->linesize[1] = w2;
+        picture->linesize[1] = 2 * w2;
         break;
     case PIX_FMT_RGB24:
     case PIX_FMT_BGR24:
@@ -789,12 +789,12 @@ int ff_fill_pointer(AVPicture *picture, uint8_t *ptr, enum PixelFormat pix_fmt,
     case PIX_FMT_NV12:
     case PIX_FMT_NV21:
         h2 = (height + (1 << pinfo->y_chroma_shift) - 1) >> pinfo->y_chroma_shift;
-        size2 = picture->linesize[1] * h2 * 2;
+        size2 = picture->linesize[1] * h2;
         picture->data[0] = ptr;
         picture->data[1] = picture->data[0] + size;
         picture->data[2] = NULL;
         picture->data[3] = NULL;
-        return size + 2 * size2;
+        return size + size2;
     case PIX_FMT_RGB24:
     case PIX_FMT_BGR24:
     case PIX_FMT_ARGB:
@@ -883,11 +883,11 @@ int avpicture_layout(const AVPicture* src, enum PixelFormat pix_fmt, int width, 
             pix_fmt == PIX_FMT_RGB555LE)
             w = width * 2;
         else if (pix_fmt == PIX_FMT_UYYVYY411)
-          w = width + width/2;
+            w = width + width/2;
         else if (pix_fmt == PIX_FMT_PAL8)
-          w = width;
+            w = width;
         else
-          w = width * (pf->depth * pf->nb_channels / 8);
+            w = width * (pf->depth * pf->nb_channels / 8);
 
         data_planes = 1;
         h = height;
@@ -901,19 +901,21 @@ int avpicture_layout(const AVPicture* src, enum PixelFormat pix_fmt, int width, 
     oh = h;
 
     for (i=0; i<data_planes; i++) {
-         if (i == 1) {
-             w = ((width >> pf->x_chroma_shift) * pf->depth + 7) / 8;
-             h = height >> pf->y_chroma_shift;
-         } else if (i == 3) {
-             w = ow;
-             h = oh;
-         }
-         s = src->data[i];
-         for(j=0; j<h; j++) {
-             memcpy(dest, s, w);
-             dest += w;
-             s += src->linesize[i];
-         }
+        if (i == 1) {
+            w = ((width >> pf->x_chroma_shift) * pf->depth + 7) / 8;
+            h = height >> pf->y_chroma_shift;
+            if (pix_fmt == PIX_FMT_NV12 || pix_fmt == PIX_FMT_NV21)
+                w <<= 1;
+        } else if (i == 3) {
+            w = ow;
+            h = oh;
+        }
+        s = src->data[i];
+        for(j=0; j<h; j++) {
+            memcpy(dest, s, w);
+            dest += w;
+            s += src->linesize[i];
+        }
     }
 
     if (pf->pixel_type == FF_PIXEL_PALETTE)

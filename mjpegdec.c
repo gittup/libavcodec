@@ -292,9 +292,10 @@ int ff_mjpeg_decode_sof(MJpegDecodeContext *s)
                  (s->h_count[2] << 12) | (s->v_count[2] <<  8) |
                  (s->h_count[3] <<  4) |  s->v_count[3];
     av_log(s->avctx, AV_LOG_DEBUG, "pix fmt id %x\n", pix_fmt_id);
-    if(!(pix_fmt_id & 0x10101010))
+    //NOTE we do not allocate pictures large enough for the possible padding of h/v_count being 4
+    if(!(pix_fmt_id & 0xD0D0D0D0))
         pix_fmt_id-= (pix_fmt_id & 0xF0F0F0F0)>>1;
-    if(!(pix_fmt_id & 0x01010101))
+    if(!(pix_fmt_id & 0x0D0D0D0D))
         pix_fmt_id-= (pix_fmt_id & 0x0F0F0F0F)>>1;
 
     switch(pix_fmt_id){
@@ -770,6 +771,10 @@ static int mjpeg_decode_scan(MJpegDecodeContext *s, int nb_components, int Ah, i
     uint8_t* data[MAX_COMPONENTS];
     int linesize[MAX_COMPONENTS];
 
+    if(s->flipped && s->avctx->flags & CODEC_FLAG_EMU_EDGE) {
+        av_log(s->avctx, AV_LOG_ERROR, "Can not flip image with CODEC_FLAG_EMU_EDGE set!\n");
+        s->flipped = 0;
+    }
     for(i=0; i < nb_components; i++) {
         int c = s->comp_index[i];
         data[c] = s->picture.data[c];
@@ -777,7 +782,6 @@ static int mjpeg_decode_scan(MJpegDecodeContext *s, int nb_components, int Ah, i
         s->coefs_finished[c] |= 1;
         if(s->flipped) {
             //picture should be flipped upside-down for this codec
-            assert(!(s->avctx->flags & CODEC_FLAG_EMU_EDGE));
             data[c] += (linesize[c] * (s->v_scount[i] * (8 * s->mb_height -((s->height/s->v_max)&7)) - 1 ));
             linesize[c] *= -1;
         }

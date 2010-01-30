@@ -97,4 +97,23 @@ void ff_acelp_lp_decode(int16_t* lp_1st, int16_t* lp_2nd, const int16_t* lsp_2nd
  */
 void ff_acelp_lspd2lpc(const double *lsp, float *lpc, int lp_half_order);
 
+/**
+ * Sort values in ascending order.
+ *
+ * @note O(n) if data already sorted, O(n^2) - otherwise
+ */
+void ff_sort_nearly_sorted_floats(float *vals, int len);
+
+/**
+ * Computes the Pa / (1 + z(-1)) or Qa / (1 - z(-1)) coefficients
+ * needed for LSP to LPC conversion.
+ * We only need to calculate the 6 first elements of the polynomial.
+ *
+ * @param lsp line spectral pairs in cosine domain
+ * @param f [out] polynomial input/output as a vector
+ *
+ * TIA/EIA/IS-733 2.4.3.3.5-1/2
+ */
+void ff_lsp2polyf(const double *lsp, double *f, int lp_half_order);
+
 #endif /* AVCODEC_LSP_H */

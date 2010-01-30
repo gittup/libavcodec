@@ -1999,6 +1999,8 @@ static void free_tables(H264Context *h){
         av_freep(&hx->s.obmc_scratchpad);
         av_freep(&hx->rbsp_buffer[1]);
         av_freep(&hx->rbsp_buffer[0]);
+        hx->rbsp_buffer_size[0] = 0;
+        hx->rbsp_buffer_size[1] = 0;
         if (i) av_freep(&h->thread_context[i]);
     }
 }
@@ -2196,8 +2198,6 @@ static av_cold int decode_init(AVCodecContext *avctx){
     if(!avctx->has_b_frames)
     s->low_delay= 1;
 
-    avctx->pix_fmt= avctx->get_format(avctx, avctx->codec->pix_fmts);
-    avctx->hwaccel = ff_find_hwaccel(avctx->codec->id, avctx->pix_fmt);
     avctx->chroma_sample_location = AVCHROMA_LOC_LEFT;
 
     decode_init_vlc();
@@ -3807,6 +3807,22 @@ static int decode_slice_header(H264Context *h, H264Context *h0){
     if (!s->context_initialized) {
         if(h != h0)
             return -1;  // we cant (re-)initialize context during parallel decoding
+
+        avcodec_set_dimensions(s->avctx, s->width, s->height);
+        s->avctx->sample_aspect_ratio= h->sps.sar;
+        if(!s->avctx->sample_aspect_ratio.den)
+            s->avctx->sample_aspect_ratio.den = 1;
+
+        if(h->sps.timing_info_present_flag){
+            s->avctx->time_base= (AVRational){h->sps.num_units_in_tick, h->sps.time_scale};
+            if(h->x264_build > 0 && h->x264_build < 44)
+                s->avctx->time_base.den *= 2;
+            av_reduce(&s->avctx->time_base.num, &s->avctx->time_base.den,
+                      s->avctx->time_base.num, s->avctx->time_base.den, 1<<30);
+        }
+        s->avctx->pix_fmt = s->avctx->get_format(s->avctx, s->avctx->codec->pix_fmts);
+        s->avctx->hwaccel = ff_find_hwaccel(s->avctx->codec->id, s->avctx->pix_fmt);
+
         if (MPV_common_init(s) < 0)
             return -1;
         s->first_field = 0;
@@ -3829,20 +3845,6 @@ static int decode_slice_header(H264Context *h, H264Context *h0){
         for(i = 0; i < s->avctx->thread_count; i++)
             if(context_init(h->thread_context[i]) < 0)
                 return -1;
-
-        s->avctx->width = s->width;
-        s->avctx->height = s->height;
-        s->avctx->sample_aspect_ratio= h->sps.sar;
-        if(!s->avctx->sample_aspect_ratio.den)
-            s->avctx->sample_aspect_ratio.den = 1;
-
-        if(h->sps.timing_info_present_flag){
-            s->avctx->time_base= (AVRational){h->sps.num_units_in_tick, h->sps.time_scale};
-            if(h->x264_build > 0 && h->x264_build < 44)
-                s->avctx->time_base.den *= 2;
-            av_reduce(&s->avctx->time_base.num, &s->avctx->time_base.den,
-                      s->avctx->time_base.num, s->avctx->time_base.den, 1<<30);
-        }
     }
 
     h->frame_num= get_bits(&s->gb, h->sps.log2_max_frame_num);
@@ -6690,7 +6692,7 @@ static int decode_slice(struct AVCodecContext *avctx, void *arg){
         ff_init_cabac_states( &h->cabac);
         ff_init_cabac_decoder( &h->cabac,
                                s->gb.buffer + get_bits_count(&s->gb)/8,
-                               ( s->gb.size_in_bits - get_bits_count(&s->gb) + 7)/8);
+                               (get_bits_left(&s->gb) + 7)/8);
         /* calculate pre-state */
         for( i= 0; i < 460; i++ ) {
             int pre;
