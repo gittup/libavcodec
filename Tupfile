@@ -44,9 +44,7 @@ objs-@(AAC_ENCODER)             += aacenc.c aaccoder.c    \
                                           psymodel.c iirfilter.c \
                                           mpeg4audio.c
 objs-@(AASC_DECODER)            += aasc.c msrledec.c
-objs-@(AC3_DECODER)             += ac3dec.c ac3tab.c   \
-                                          ac3dec_data.c ac3.c \
-                                          ac3_parser.c aac_ac3_parser.c
+objs-@(AC3_DECODER)             += ac3dec.c ac3dec_data.c ac3.c
 objs-@(AC3_ENCODER)             += ac3enc.c ac3tab.c ac3.c
 objs-@(ALAC_DECODER)            += alac.c
 objs-@(ALAC_ENCODER)            += alacenc.c
@@ -438,8 +436,6 @@ objs-@(ADPCM_YAMAHA_ENCODER)       += adpcm.c
 objs-@(ADTS_MUXER)              += mpeg4audio.c
 objs-@(DV_DEMUXER)              += dvdata.c
 objs-@(DV_MUXER)                += dvdata.c
-objs-@(EAC3_DEMUXER)            += ac3_parser.c ac3tab.c \
-                                          aac_ac3_parser.c
 objs-@(FLAC_DEMUXER)            += flacdec.c flacdata.c flac.c
 objs-@(FLAC_MUXER)              += flacdec.c flacdata.c flac.c
 objs-@(FLV_DEMUXER)             += mpeg4audio.c
