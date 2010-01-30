@@ -2,9 +2,10 @@ include_rules
 include $(GITTUP_ROOT)/mplayer/mplayer.tup
 include $(GITTUP_ROOT)/mplayer/common.tup
 
-HAVE_YASM = 1
+NAME = avcodec
 
-objs-y = allcodecs.c                                                      \
+
+objs = allcodecs.c                                                      \
        audioconvert.c                                                   \
        avpacket.c                                                       \
        bitstream.c                                                      \
@@ -542,18 +543,24 @@ objs-@(REMOVE_EXTRADATA_BSF)       += remove_extradata_bsf.c
 objs-@(TEXT2MOVSUB_BSF)            += movsub_bsf.c
 
 # thread libraries
-objs-y                  += pthread.c
+objs-@(HAVE_BEOSTHREADS)               += beosthread.c
+objs-@(HAVE_OS2THREADS)                += os2thread.c
+objs-@(HAVE_PTHREADS)                  += pthread.c
+objs-@(HAVE_W32THREADS)                += w32thread.c
 
 # processor-specific code
 X86-objs-@(MLP_DECODER)         += x86/mlpdsp.c
 X86-objs-@(TRUEHD_DECODER)      += x86/mlpdsp.c
 
-#objs-y                       += $(X86-objs-y)
+objs-$(ARCH_X86)                       += $(X86-objs-y)
 
-objs-@(HAVE_SSE)       += x86/fft_sse.c
-YASM-objs-@(FFT)                += x86/fft_mmx.asm
+YASM-objs-FFT-@(HAVE_AMD3DNOW)         += x86/fft_3dn.c
+YASM-objs-FFT-@(HAVE_AMD3DNOWEXT)      += x86/fft_3dn2.c
+YASM-objs-FFT-@(HAVE_SSE)              += x86/fft_sse.c
+YASM-objs-@(FFT)                += x86/fft_mmx.asm                 \
+                                          $(YASM-objs-FFT-y)
 YASM-objs-@(GPL)                += x86/h264_deblock_sse2.asm       \
-                                   x86/h264_idct_sse2.asm          \
+                                          x86/h264_idct_sse2.asm          \
 
 MMX-objs-@(CAVS_DECODER)        += x86/cavsdsp_mmx.c
 MMX-objs-@(ENCODERS)            += x86/dsputilenc_mmx.c
@@ -569,7 +576,8 @@ MMX-objs-@(VP6_DECODER)         += x86/vp3dsp_mmx.c              \
                                           x86/vp3dsp_sse2.c             \
                                           x86/vp6dsp_mmx.c              \
                                           x86/vp6dsp_sse2.c
-YASM-objs-@(HAVE_MMX) += x86/dsputil_yasm.asm
+MMX-objs-@(HAVE_YASM)                  += x86/dsputil_yasm.asm            \
+                                          $(YASM-objs-y)
 
 X86-objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
                                           x86/dnxhd_mmx.c               \
@@ -581,7 +589,6 @@ X86-objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
                                           x86/motion_est_mmx.c          \
                                           x86/mpegvideo_mmx.c           \
                                           x86/simple_idct_mmx.c         \
-					  $(MMX-objs-y)
 
 objs-$(ARCH_ALPHA)                     += alpha/dsputil_alpha.c         \
                                           alpha/dsputil_alpha_asm.c     \
@@ -597,19 +604,19 @@ objs-$(ARCH_ARM)                       += arm/dsputil_init_arm.c        \
                                           arm/mpegvideo_arm.c           \
                                           arm/simple_idct_arm.c         \
 
-objs-$(HAVE_ARMV5TE)                   += arm/dsputil_init_armv5te.c    \
+objs-@(HAVE_ARMV5TE)                   += arm/dsputil_init_armv5te.c    \
                                           arm/mpegvideo_armv5te.c       \
                                           arm/mpegvideo_armv5te_s.c     \
                                           arm/simple_idct_armv5te.c     \
 
-objs-$(HAVE_ARMV6)                     += arm/dsputil_init_armv6.c      \
+objs-@(HAVE_ARMV6)                     += arm/dsputil_init_armv6.c      \
                                           arm/dsputil_armv6.c           \
                                           arm/simple_idct_armv6.c       \
 
-objs-$(HAVE_ARMVFP)                    += arm/dsputil_vfp.c             \
+objs-@(HAVE_ARMVFP)                    += arm/dsputil_vfp.c             \
                                           arm/dsputil_init_vfp.c        \
 
-objs-$(HAVE_IWMMXT)                    += arm/dsputil_iwmmxt.c          \
+objs-@(HAVE_IWMMXT)                    += arm/dsputil_iwmmxt.c          \
                                           arm/mpegvideo_iwmmxt.c        \
 
 NEON-objs-@(FFT)                += arm/fft_neon.c                \
@@ -621,7 +628,7 @@ NEON-objs-@(H264_DECODER)       += arm/h264dsp_neon.c            \
 
 NEON-objs-@(VP3_DECODER)        += arm/vp3dsp_neon.c
 
-objs-$(HAVE_NEON)                      += arm/dsputil_init_neon.c       \
+objs-@(HAVE_NEON)                      += arm/dsputil_init_neon.c       \
                                           arm/dsputil_neon.c            \
                                           arm/simple_idct_neon.c        \
                                           $(NEON-objs-y)
@@ -642,7 +649,7 @@ ALTIVEC-objs-@(VP3_DECODER)     += ppc/vp3dsp_altivec.c
 ALTIVEC-objs-@(VP5_DECODER)     += ppc/vp3dsp_altivec.c
 ALTIVEC-objs-@(VP6_DECODER)     += ppc/vp3dsp_altivec.c
 
-objs-$(HAVE_ALTIVEC)                   += ppc/check_altivec.c           \
+objs-@(HAVE_ALTIVEC)                   += ppc/check_altivec.c           \
                                           ppc/dsputil_altivec.c         \
                                           ppc/fdct_altivec.c            \
                                           ppc/fft_altivec.c             \
@@ -659,16 +666,35 @@ objs-$(ARCH_SH4)                       += sh4/dsputil_align.c           \
 
 objs-@(MLIB)                    += mlib/dsputil_mlib.c           \
 
-objs-$(HAVE_MMI)                       += ps2/dsputil_mmi.c             \
+objs-@(HAVE_MMI)                       += ps2/dsputil_mmi.c             \
                                           ps2/idct_mmi.c                \
                                           ps2/mpegvideo_mmi.c           \
 
-objs-$(HAVE_VIS)                       += sparc/dsputil_vis.c           \
+objs-@(HAVE_VIS)                       += sparc/dsputil_vis.c           \
                                           sparc/simple_idct_vis.c       \
 
+
+
+
+
+
+
+
+
+
+
+ifdef CONFIG_MPEGAUDIO_HP
+else
+endif
+
+
+
+ifdef CONFIG_HARDCODED_TABLES
+endif
 ifeq (@(MPLAYER),y)
-: foreach $(objs-y) |> !cc |> %B.o {objs}
-: foreach $(YASM-objs-y) |> yasm -f ELF %f |> %B.o {objs}
-: foreach $(X86-objs-y) |> !cc |> x86-%B.o {objs}
-: {objs} |> !ar |> libavcodec.a
+objs-@(HAVE_MMX) += $(MMX-objs-y)
+objs += $(objs-y)
+: foreach $(objs) |> !mplayer. |> %B.o {objs}
+: foreach $(X86-objs-y) |> !mplayer. |> x86-%B.o {objs}
+: {objs} |> !ar |> lib$(NAME).a
 endif
