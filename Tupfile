@@ -60,6 +60,7 @@ objs-@(ASV2_DECODER)            += asv1.c mpeg12data.c
 objs-@(ASV2_ENCODER)            += asv1.c mpeg12data.c
 objs-@(ATRAC1_DECODER)          += atrac1.c atrac.c
 objs-@(ATRAC3_DECODER)          += atrac3.c atrac.c
+objs-@(AURA_DECODER)            += cyuv.c
 objs-@(AVS_DECODER)             += avs.c
 objs-@(BETHSOFTVID_DECODER)     += bethsoftvideo.c
 objs-@(BFI_DECODER)             += bfi.c
