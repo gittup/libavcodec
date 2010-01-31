@@ -157,7 +157,7 @@ static inline void h264_idct8_1d(int16_t *block)
 static void ff_h264_idct8_add_mmx(uint8_t *dst, int16_t *block, int stride)
 {
     int i;
-    DECLARE_ALIGNED_8(int16_t, b2[64]);
+    DECLARE_ALIGNED_8(int16_t, b2)[64];
 
     block[0] += 32;
 
@@ -617,7 +617,7 @@ static void ff_h264_idct_add8_sse2(uint8_t **dest, const int *block_offset, DCTE
         "pavgb    %%mm2,  "#tmp"   \n\t"\
         "pavgb    "#tmp", "#q2"    \n\t" /* avg(p2,avg(p0,q0)) */\
         "pxor   "q2addr", "#tmp"   \n\t"\
-        "pand     %8,     "#tmp"   \n\t" /* (p2^avg(p0,q0))&1 */\
+        "pand     %9,     "#tmp"   \n\t" /* (p2^avg(p0,q0))&1 */\
         "psubusb  "#tmp", "#q2"    \n\t" /* (p2+((p0+q0+1)>>1))>>1 */\
         "movq     "#p1",  "#tmp"   \n\t"\
         "psubusb  "#tc0", "#tmp"   \n\t"\
@@ -628,51 +628,51 @@ static void ff_h264_idct_add8_sse2(uint8_t **dest, const int *block_offset, DCTE
 
 static inline void h264_loop_filter_luma_mmx2(uint8_t *pix, int stride, int alpha1, int beta1, int8_t *tc0)
 {
-    DECLARE_ALIGNED_8(uint64_t, tmp0[2]);
+    DECLARE_ALIGNED_8(uint64_t, tmp0)[2];
 
     __asm__ volatile(
-        "movq    (%1,%3), %%mm0    \n\t" //p1
-        "movq    (%1,%3,2), %%mm1  \n\t" //p0
-        "movq    (%2),    %%mm2    \n\t" //q0
-        "movq    (%2,%3), %%mm3    \n\t" //q1
-        H264_DEBLOCK_MASK(%6, %7)
+        "movq    (%2,%4), %%mm0    \n\t" //p1
+        "movq    (%2,%4,2), %%mm1  \n\t" //p0
+        "movq    (%3),    %%mm2    \n\t" //q0
+        "movq    (%3,%4), %%mm3    \n\t" //q1
+        H264_DEBLOCK_MASK(%7, %8)
 
-        "movd      %5,    %%mm4    \n\t"
+        "movd      %6,    %%mm4    \n\t"
         "punpcklbw %%mm4, %%mm4    \n\t"
         "punpcklwd %%mm4, %%mm4    \n\t"
         "pcmpeqb   %%mm3, %%mm3    \n\t"
         "movq      %%mm4, %%mm6    \n\t"
         "pcmpgtb   %%mm3, %%mm4    \n\t"
-        "movq      %%mm6, 8+%0     \n\t"
+        "movq      %%mm6, %1       \n\t"
         "pand      %%mm4, %%mm7    \n\t"
         "movq      %%mm7, %0       \n\t"
 
         /* filter p1 */
-        "movq     (%1),   %%mm3    \n\t" //p2
+        "movq     (%2),   %%mm3    \n\t" //p2
         DIFF_GT2_MMX(%%mm1, %%mm3, %%mm5, %%mm6, %%mm4) // |p2-p0|>beta-1
         "pand     %%mm7,  %%mm6    \n\t" // mask & |p2-p0|<beta
-        "pand     8+%0,   %%mm7    \n\t" // mask & tc0
+        "pand     %1,     %%mm7    \n\t" // mask & tc0
         "movq     %%mm7,  %%mm4    \n\t"
         "psubb    %%mm6,  %%mm7    \n\t"
         "pand     %%mm4,  %%mm6    \n\t" // mask & |p2-p0|<beta & tc0
-        H264_DEBLOCK_Q1(%%mm0, %%mm3, "(%1)", "(%1,%3)", %%mm6, %%mm4)
+        H264_DEBLOCK_Q1(%%mm0, %%mm3, "(%2)", "(%2,%4)", %%mm6, %%mm4)
 
         /* filter q1 */
-        "movq    (%2,%3,2), %%mm4  \n\t" //q2
+        "movq    (%3,%4,2), %%mm4  \n\t" //q2
         DIFF_GT2_MMX(%%mm2, %%mm4, %%mm5, %%mm6, %%mm3) // |q2-q0|>beta-1
         "pand     %0,     %%mm6    \n\t"
-        "movq     8+%0,   %%mm5    \n\t" // can be merged with the and below but is slower then
+        "movq     %1,     %%mm5    \n\t" // can be merged with the and below but is slower then
         "pand     %%mm6,  %%mm5    \n\t"
         "psubb    %%mm6,  %%mm7    \n\t"
-        "movq    (%2,%3), %%mm3    \n\t"
-        H264_DEBLOCK_Q1(%%mm3, %%mm4, "(%2,%3,2)", "(%2,%3)", %%mm5, %%mm6)
+        "movq    (%3,%4), %%mm3    \n\t"
+        H264_DEBLOCK_Q1(%%mm3, %%mm4, "(%3,%4,2)", "(%3,%4)", %%mm5, %%mm6)
 
         /* filter p0, q0 */
-        H264_DEBLOCK_P0_Q0(%8, unused)
-        "movq      %%mm1, (%1,%3,2) \n\t"
-        "movq      %%mm2, (%2)      \n\t"
+        H264_DEBLOCK_P0_Q0(%9, unused)
+        "movq      %%mm1, (%2,%4,2) \n\t"
+        "movq      %%mm2, (%3)      \n\t"
 
-        : "=m"(*tmp0)
+        : "=m"(tmp0[0]), "=m"(tmp0[1])
         : "r"(pix-3*stride), "r"(pix), "r"((x86_reg)stride),
           "m"(*tmp0/*unused*/), "m"(*(uint32_t*)tc0), "m"(alpha1), "m"(beta1),
           "m"(ff_bone)
@@ -690,7 +690,7 @@ static void h264_h_loop_filter_luma_mmx2(uint8_t *pix, int stride, int alpha, in
 {
     //FIXME: could cut some load/stores by merging transpose with filter
     // also, it only needs to transpose 6x8
-    DECLARE_ALIGNED_8(uint8_t, trans[8*8]);
+    DECLARE_ALIGNED_8(uint8_t, trans)[8*8];
     int i;
     for(i=0; i<2; i++, pix+=8*stride, tc0+=2) {
         if((tc0[0] & tc0[1]) < 0)
@@ -734,7 +734,7 @@ static void h264_v_loop_filter_chroma_mmx2(uint8_t *pix, int stride, int alpha, 
 static void h264_h_loop_filter_chroma_mmx2(uint8_t *pix, int stride, int alpha, int beta, int8_t *tc0)
 {
     //FIXME: could cut some load/stores by merging transpose with filter
-    DECLARE_ALIGNED_8(uint8_t, trans[8*4]);
+    DECLARE_ALIGNED_8(uint8_t, trans)[8*4];
     transpose4x4(trans, pix-2, 8, stride);
     transpose4x4(trans+4, pix-2+4*stride, 8, stride);
     h264_loop_filter_chroma_mmx2(trans+2*8, 8, alpha-1, beta-1, tc0);
@@ -784,7 +784,7 @@ static void h264_v_loop_filter_chroma_intra_mmx2(uint8_t *pix, int stride, int a
 static void h264_h_loop_filter_chroma_intra_mmx2(uint8_t *pix, int stride, int alpha, int beta)
 {
     //FIXME: could cut some load/stores by merging transpose with filter
-    DECLARE_ALIGNED_8(uint8_t, trans[8*4]);
+    DECLARE_ALIGNED_8(uint8_t, trans)[8*4];
     transpose4x4(trans, pix-2, 8, stride);
     transpose4x4(trans+4, pix-2+4*stride, 8, stride);
     h264_loop_filter_chroma_intra_mmx2(trans+2*8, 8, alpha-1, beta-1);
@@ -812,7 +812,7 @@ static void h264_loop_filter_strength_mmx2( int16_t bS[2][4][4], uint8_t nnz[40]
     // could do a special case for dir==0 && edges==1, but it only reduces the
     // average filter time by 1.2%
     for( dir=1; dir>=0; dir-- ) {
-        const int d_idx = dir ? -8 : -1;
+        const x86_reg d_idx = dir ? -8 : -1;
         const int mask_mv = dir ? mask_mv1 : mask_mv0;
         DECLARE_ALIGNED_8(const uint64_t, mask_dir) = dir ? 0 : 0xffffffffffffffffULL;
         int b_idx, edge, l;
@@ -825,54 +825,53 @@ static void h264_loop_filter_strength_mmx2( int16_t bS[2][4][4], uint8_t nnz[40]
                 __asm__ volatile("pxor %%mm0, %%mm0 \n\t":);
                 for( l = bidir; l >= 0; l-- ) {
                     __asm__ volatile(
-                        "movd %0, %%mm1 \n\t"
-                        "punpckldq %1, %%mm1 \n\t"
+                        "movd (%0), %%mm1 \n\t"
+                        "punpckldq (%0,%1), %%mm1 \n\t"
                         "punpckldq %%mm1, %%mm2 \n\t"
                         "pcmpeqb %%mm2, %%mm1 \n\t"
                         "paddb %%mm6, %%mm1 \n\t"
                         "punpckhbw %%mm7, %%mm1 \n\t" // ref[b] != ref[bn]
                         "por %%mm1, %%mm0 \n\t"
 
-                        "movq %2, %%mm1 \n\t"
-                        "movq 8+1*%2, %%mm2 \n\t"
-                        "psubw %3, %%mm1 \n\t"
-                        "psubw 8+1*%3, %%mm2 \n\t"
+                        "movq (%2), %%mm1 \n\t"
+                        "movq 8(%2), %%mm2 \n\t"
+                        "psubw (%2,%1,4), %%mm1 \n\t"
+                        "psubw 8(%2,%1,4), %%mm2 \n\t"
                         "packsswb %%mm2, %%mm1 \n\t"
                         "paddb %%mm5, %%mm1 \n\t"
                         "pminub %%mm4, %%mm1 \n\t"
                         "pcmpeqb %%mm4, %%mm1 \n\t" // abs(mv[b] - mv[bn]) >= limit
                         "por %%mm1, %%mm0 \n\t"
-                        ::"m"(ref[l][b_idx]),
-                          "m"(ref[l][b_idx+d_idx]),
-                          "m"(mv[l][b_idx][0]),
-                          "m"(mv[l][b_idx+d_idx][0])
+                        ::"r"(ref[l]+b_idx),
+                          "r"(d_idx),
+                          "r"(mv[l]+b_idx)
                     );
                 }
                 if(bidir==1){
                     __asm__ volatile("pxor %%mm3, %%mm3 \n\t":);
                     for( l = bidir; l >= 0; l-- ) {
                     __asm__ volatile(
-                        "movd %0, %%mm1 \n\t"
-                        "punpckldq %1, %%mm1 \n\t"
+                        "movd (%0), %%mm1 \n\t"
+                        "punpckldq (%1), %%mm1 \n\t"
                         "punpckldq %%mm1, %%mm2 \n\t"
                         "pcmpeqb %%mm2, %%mm1 \n\t"
                         "paddb %%mm6, %%mm1 \n\t"
                         "punpckhbw %%mm7, %%mm1 \n\t" // ref[b] != ref[bn]
                         "por %%mm1, %%mm3 \n\t"
 
-                        "movq %2, %%mm1 \n\t"
-                        "movq 8+1*%2, %%mm2 \n\t"
-                        "psubw %3, %%mm1 \n\t"
-                        "psubw 8+1*%3, %%mm2 \n\t"
+                        "movq (%2), %%mm1 \n\t"
+                        "movq 8(%2), %%mm2 \n\t"
+                        "psubw (%3), %%mm1 \n\t"
+                        "psubw 8(%3), %%mm2 \n\t"
                         "packsswb %%mm2, %%mm1 \n\t"
                         "paddb %%mm5, %%mm1 \n\t"
                         "pminub %%mm4, %%mm1 \n\t"
                         "pcmpeqb %%mm4, %%mm1 \n\t" // abs(mv[b] - mv[bn]) >= limit
                         "por %%mm1, %%mm3 \n\t"
-                        ::"m"(ref[l][b_idx]),
-                          "m"(ref[1-l][b_idx+d_idx]),
-                          "m"(mv[l][b_idx][0]),
-                          "m"(mv[1-l][b_idx+d_idx][0])
+                        ::"r"(ref[l]+b_idx),
+                          "r"(ref[1-l]+b_idx+d_idx),
+                          "r"(mv[l][b_idx]),
+                          "r"(mv[1-l][b_idx+d_idx])
                     );
                     }
                     __asm__ volatile(
@@ -1975,7 +1974,7 @@ static void OPNAME ## h264_qpel ## SIZE ## _mc30_ ## MMX(uint8_t *dst, uint8_t *
 
 #define H264_MC_V(OPNAME, SIZE, MMX, ALIGN) \
 static void OPNAME ## h264_qpel ## SIZE ## _mc01_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*SIZE];\
     put_h264_qpel ## SIZE ## _v_lowpass_ ## MMX(temp, src, SIZE, stride);\
     OPNAME ## pixels ## SIZE ## _l2_ ## MMX(dst, src, temp, stride, stride, SIZE);\
 }\
@@ -1985,43 +1984,43 @@ static void OPNAME ## h264_qpel ## SIZE ## _mc02_ ## MMX(uint8_t *dst, uint8_t *
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc03_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*SIZE];\
     put_h264_qpel ## SIZE ## _v_lowpass_ ## MMX(temp, src, SIZE, stride);\
     OPNAME ## pixels ## SIZE ## _l2_ ## MMX(dst, src+stride, temp, stride, stride, SIZE);\
 }\
 
 #define H264_MC_HV(OPNAME, SIZE, MMX, ALIGN) \
 static void OPNAME ## h264_qpel ## SIZE ## _mc11_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*SIZE];\
     put_h264_qpel ## SIZE ## _v_lowpass_ ## MMX(temp, src, SIZE, stride);\
     OPNAME ## h264_qpel ## SIZE ## _h_lowpass_l2_ ## MMX(dst, src, temp, stride, SIZE);\
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc31_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*SIZE];\
     put_h264_qpel ## SIZE ## _v_lowpass_ ## MMX(temp, src+1, SIZE, stride);\
     OPNAME ## h264_qpel ## SIZE ## _h_lowpass_l2_ ## MMX(dst, src, temp, stride, SIZE);\
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc13_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*SIZE];\
     put_h264_qpel ## SIZE ## _v_lowpass_ ## MMX(temp, src, SIZE, stride);\
     OPNAME ## h264_qpel ## SIZE ## _h_lowpass_l2_ ## MMX(dst, src+stride, temp, stride, SIZE);\
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc33_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*SIZE];\
     put_h264_qpel ## SIZE ## _v_lowpass_ ## MMX(temp, src+1, SIZE, stride);\
     OPNAME ## h264_qpel ## SIZE ## _h_lowpass_l2_ ## MMX(dst, src+stride, temp, stride, SIZE);\
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc22_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint16_t, temp[SIZE*(SIZE<8?12:24)]);\
+    DECLARE_ALIGNED(ALIGN, uint16_t, temp)[SIZE*(SIZE<8?12:24)];\
     OPNAME ## h264_qpel ## SIZE ## _hv_lowpass_ ## MMX(dst, temp, src, stride, SIZE, stride);\
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc21_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE];\
     uint8_t * const halfHV= temp;\
     int16_t * const halfV= (int16_t*)(temp + SIZE*SIZE);\
     assert(((int)temp & 7) == 0);\
@@ -2030,7 +2029,7 @@ static void OPNAME ## h264_qpel ## SIZE ## _mc21_ ## MMX(uint8_t *dst, uint8_t *
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc23_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE];\
     uint8_t * const halfHV= temp;\
     int16_t * const halfV= (int16_t*)(temp + SIZE*SIZE);\
     assert(((int)temp & 7) == 0);\
@@ -2039,7 +2038,7 @@ static void OPNAME ## h264_qpel ## SIZE ## _mc23_ ## MMX(uint8_t *dst, uint8_t *
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc12_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE];\
     uint8_t * const halfHV= temp;\
     int16_t * const halfV= (int16_t*)(temp + SIZE*SIZE);\
     assert(((int)temp & 7) == 0);\
@@ -2048,7 +2047,7 @@ static void OPNAME ## h264_qpel ## SIZE ## _mc12_ ## MMX(uint8_t *dst, uint8_t *
 }\
 \
 static void OPNAME ## h264_qpel ## SIZE ## _mc32_ ## MMX(uint8_t *dst, uint8_t *src, int stride){\
-    DECLARE_ALIGNED(ALIGN, uint8_t, temp[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE]);\
+    DECLARE_ALIGNED(ALIGN, uint8_t, temp)[SIZE*(SIZE<8?12:24)*2 + SIZE*SIZE];\
     uint8_t * const halfHV= temp;\
     int16_t * const halfV= (int16_t*)(temp + SIZE*SIZE);\
     assert(((int)temp & 7) == 0);\
@@ -2111,7 +2110,7 @@ H264_MC_816(H264_MC_HV, ssse3)
 #endif
 
 /* rnd interleaved with rnd div 8, use p+1 to access rnd div 8 */
-DECLARE_ALIGNED_8(static const uint64_t, h264_rnd_reg[4]) = {
+DECLARE_ALIGNED_8(static const uint64_t, h264_rnd_reg)[4] = {
     0x0020002000200020ULL, 0x0004000400040004ULL, 0x001C001C001C001CULL, 0x0003000300030003ULL
 };
 

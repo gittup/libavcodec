@@ -4,7 +4,6 @@ include $(GITTUP_ROOT)/mplayer/common.tup
 
 NAME = avcodec
 
-
 objs = allcodecs.c                                                      \
        audioconvert.c                                                   \
        avpacket.c                                                       \
@@ -28,6 +27,7 @@ objs = allcodecs.c                                                      \
 objs-@(AANDCT)                  += aandcttab.c
 objs-@(ENCODERS)                += faandct.c jfdctfst.c jfdctint.c
 objs-@(DCT)                     += dct.c
+objs-@(DXVA2)                   += dxva2.c
 FFT-objs-@(HARDCODED_TABLES)    += cos_tables.c
 objs-@(FFT)                     += fft.c $(FFT-objs-y)
 objs-@(GOLOMB)                  += golomb.c
@@ -135,6 +135,7 @@ objs-@(H263_ENCODER)            += mpegvideo_enc.c mpeg4video.c mpeg4videoenc.c 
 objs-@(H264_DECODER)            += h264.c h264idct.c h264pred.c h264_loopfilter.c h264_direct.c cabac.c \
                                           h264_sei.c h264_ps.c h264_refs.c h264_cavlc.c h264_cabac.c\
                                           mpegvideo.c error_resilience.c
+objs-@(H264_DXVA2_HWACCEL)      += dxva2_h264.c
 objs-@(H264_ENCODER)            += h264enc.c h264dspenc.c
 objs-@(H264_VAAPI_HWACCEL)      += vaapi_h264.c
 objs-@(HUFFYUV_DECODER)         += huffyuv.c
