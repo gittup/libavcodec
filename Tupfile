@@ -686,7 +686,7 @@ endif
 ifeq (@(MPLAYER),y)
 objs-@(HAVE_MMX) += $(MMX-objs-y)
 objs += $(objs-y)
-: foreach $(objs) |> !mplayer. |> %B.o {objs}
-: foreach $(X86-objs-y) |> !mplayer. |> x86-%B.o {objs}
+: foreach $(objs) |> !mplayer |> %B.o {objs}
+: foreach $(X86-objs-y) |> !mplayer |> x86-%B.o {objs}
 : {objs} |> !ar |> lib$(NAME).a
 endif
