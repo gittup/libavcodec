@@ -29,12 +29,12 @@ objs-@(ENCODERS)                += faandct.c jfdctfst.c jfdctint.c
 objs-@(DCT)                     += dct.c
 objs-@(DXVA2)                   += dxva2.c
 FFT-objs-@(HARDCODED_TABLES)    += cos_tables.c
-objs-@(FFT)                     += fft.c $(FFT-objs-y)
+objs-@(FFT)                     += fft.c $(FFT-objs-1) $(FFT-objs-y)
 objs-@(GOLOMB)                  += golomb.c
 objs-@(LPC)                     += lpc.c
 objs-@(MDCT)                    += mdct.c
 RDFT-objs-@(HARDCODED_TABLES)   += sin_tables.c
-objs-@(RDFT)                    += rdft.c $(RDFT-objs-y)
+objs-@(RDFT)                    += rdft.c $(RDFT-objs-1) $(RDFT-objs-y)
 objs-@(VAAPI)                   += vaapi.c
 objs-@(VDPAU)                   += vdpau.c
 
@@ -542,13 +542,13 @@ objs-@(HAVE_W32THREADS)                += w32thread.c
 X86-objs-@(MLP_DECODER)         += x86/mlpdsp.c
 X86-objs-@(TRUEHD_DECODER)      += x86/mlpdsp.c
 
-objs-$(ARCH_X86)                       += $(X86-objs-y)
+objs-$(ARCH_X86)                       += $(X86-objs-1) $(X86-objs-y)
 
 YASM-objs-FFT-@(HAVE_AMD3DNOW)         += x86/fft_3dn.c
 YASM-objs-FFT-@(HAVE_AMD3DNOWEXT)      += x86/fft_3dn2.c
 YASM-objs-FFT-@(HAVE_SSE)              += x86/fft_sse.c
 YASM-objs-@(FFT)                += x86/fft_mmx.asm                 \
-                                          $(YASM-objs-FFT-y)
+                                          $(YASM-objs-FFT-1) $(YASM-objs-FFT-y)
 YASM-objs-@(GPL)                += x86/h264_deblock_sse2.asm       \
                                           x86/h264_idct_sse2.asm          \
 
@@ -567,7 +567,7 @@ MMX-objs-@(VP6_DECODER)         += x86/vp3dsp_mmx.c              \
                                           x86/vp6dsp_mmx.c              \
                                           x86/vp6dsp_sse2.c
 MMX-objs-@(HAVE_YASM)                  += x86/dsputil_yasm.asm            \
-                                          $(YASM-objs-y)
+                                          $(YASM-objs-1) $(YASM-objs-y)
 
 X86-objs-@(HAVE_MMX)                       += x86/cpuid.c                   \
                                           x86/dnxhd_mmx.c               \
@@ -623,7 +623,7 @@ NEON-objs-@(VP3_DECODER)        += arm/vp3dsp_neon.c
 objs-@(HAVE_NEON)                      += arm/dsputil_init_neon.c       \
                                           arm/dsputil_neon.c            \
                                           arm/simple_idct_neon.c        \
-                                          $(NEON-objs-y)
+                                          $(NEON-objs-1) $(NEON-objs-y)
 
 objs-$(ARCH_BFIN)                      += bfin/dsputil_bfin.c           \
                                           bfin/fdct_bfin.c              \
@@ -650,7 +650,7 @@ objs-@(HAVE_ALTIVEC)                   += ppc/check_altivec.c           \
                                           ppc/idct_altivec.c            \
                                           ppc/int_altivec.c             \
                                           ppc/mpegvideo_altivec.c       \
-                                          $(ALTIVEC-objs-y)
+                                          $(ALTIVEC-objs-1) $(ALTIVEC-objs-y)
 
 objs-$(ARCH_SH4)                       += sh4/dsputil_align.c           \
                                           sh4/dsputil_sh4.c             \
@@ -684,9 +684,9 @@ endif
 ifdef CONFIG_HARDCODED_TABLES
 endif
 ifeq (@(MPLAYER),y)
-objs-@(HAVE_MMX) += $(MMX-objs-y)
-objs += $(objs-y)
+objs-@(HAVE_MMX) += $(MMX-objs-1) $(MMX-objs-y)
+objs += $(objs-1) $(objs-y)
 : foreach $(objs) |> !mplayer |> %B.o {objs}
-: foreach $(X86-objs-y) |> !mplayer |> x86-%B.o {objs}
+: foreach $(X86-objs-1) $(X86-objs-y) |> !mplayer |> x86-%B.o {objs}
 : {objs} |> !ar |> lib$(NAME).a
 endif
